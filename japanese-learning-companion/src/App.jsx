@@ -396,8 +396,13 @@ export default function JapaneseLearningCompanion() {
         )}
 
         {tab === "resources" && (
-          <motion.main initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-            {[
+          <motion.main initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+            <section>
+              <div className="mb-3 inline-flex items-center rounded-full bg-rose-100 px-3 py-1 text-sm font-semibold text-rose-700">
+                通用资源
+              </div>
+              <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+                {[
               {
                 title: "主线教材",
                 name: "《大家的日语》或 IRODORI",
@@ -444,28 +449,95 @@ export default function JapaneseLearningCompanion() {
                 ]
               }
             ].map((resource) => (
-              <div key={resource.title} className="rounded-[2rem] bg-white/80 p-6 shadow-sm ring-1 ring-rose-100">
-                <div className="mb-3 inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-rose-100 text-rose-600">
-                  <BookOpen size={21} />
-                </div>
-                <h2 className="text-lg font-bold text-stone-900">{resource.title}</h2>
-                <p className="mt-1 font-semibold text-rose-600">{resource.name}</p>
-                <p className="mt-3 text-sm leading-6 text-stone-600">{resource.desc}</p>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {resource.links.map((link) => (
-                    <a
-                      key={link.href}
-                      href={link.href}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="rounded-full bg-rose-100 px-3 py-1.5 text-xs font-semibold text-rose-700 transition hover:bg-rose-200"
-                    >
-                      {link.label}
-                    </a>
-                  ))}
-                </div>
+                  <div key={resource.title} className="rounded-[2rem] bg-white/80 p-6 shadow-sm ring-1 ring-rose-100">
+                    <div className="mb-3 inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-rose-100 text-rose-600">
+                      <BookOpen size={21} />
+                    </div>
+                    <h2 className="text-lg font-bold text-stone-900">{resource.title}</h2>
+                    <p className="mt-1 font-semibold text-rose-600">{resource.name}</p>
+                    <p className="mt-3 text-sm leading-6 text-stone-600">{resource.desc}</p>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {resource.links.map((link) => (
+                        <a
+                          key={link.href}
+                          href={link.href}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="rounded-full bg-rose-100 px-3 py-1.5 text-xs font-semibold text-rose-700 transition hover:bg-rose-200"
+                        >
+                          {link.label}
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
+            </section>
+
+            <section>
+              <div className="mb-3 inline-flex items-center rounded-full bg-violet-100 px-3 py-1 text-sm font-semibold text-violet-700">
+                短文阅读 / 多读
+              </div>
+              <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+                {[
+                  {
+                    title: "にほんごたどく｜免费分级读物",
+                    stage: "にほんごたどく Level 0–1｜现在就可以用",
+                    desc: "图文友好、句子短、重复率高，适合刚开始建立日语阅读手感。",
+                    href: "https://tadoku.org/japanese/en/free-books-en/"
+                  },
+                  {
+                    title: "KCよむよむ｜日本国际交流基金短篇多读",
+                    stage: "KCよむよむ A1｜现在就可以用",
+                    desc: "短篇主题轻松，适合每天读1篇，练习不查太多词也能抓大意。",
+                    href: "https://www.jpf.go.jp/j/kansai/clip/yomyom/"
+                  },
+                  {
+                    title: "YomuJP N5短文",
+                    stage: "YomuJP N5｜第10课后开始尝试",
+                    desc: "围绕N5语法和词汇设计，可用于课后阅读与句型巩固。",
+                    href: "https://yomujp.com/n5/"
+                  },
+                  {
+                    title: "Watanoc N5短文",
+                    stage: "Watanoc N5｜第10课后开始尝试",
+                    desc: "篇幅短、可持续多读，适合配合做“3词+1句”阅读笔记。",
+                    href: "https://watanoc.com/tag/n5"
+                  },
+                  {
+                    title: "J-Nihongo N5读解练习",
+                    stage: "J-Nihongo N5｜第15课后开始尝试",
+                    desc: "读解题感更强，适合在有一定语法基础后训练信息定位能力。",
+                    href: "https://j-nihongo.com/yomimono/"
+                  },
+                  {
+                    title: "NHK News Web Easy",
+                    stage: "NHK News Web Easy｜N4后半再开始",
+                    desc: "真实新闻改写文本，适合过渡到更接近真实语境的阅读输入。",
+                    href: "https://www3.nhk.or.jp/news/easy/"
+                  }
+                ].map((resource) => (
+                  <div key={resource.title} className="rounded-[2rem] bg-white/80 p-6 shadow-sm ring-1 ring-rose-100">
+                    <div className="mb-3 inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-100 text-violet-600">
+                      <BookOpen size={21} />
+                    </div>
+                    <h2 className="text-lg font-bold text-stone-900">{resource.title}</h2>
+                    <p className="mt-1 text-sm font-semibold text-violet-600">{resource.stage}</p>
+                    <p className="mt-3 text-sm leading-6 text-stone-600">{resource.desc}</p>
+                    <div className="mt-4">
+                      <a
+                        href={resource.href}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex rounded-full bg-violet-100 px-3 py-1.5 text-xs font-semibold text-violet-700 transition hover:bg-violet-200"
+                      >
+                        打开资源
+                      </a>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
           </motion.main>
         )}
 
