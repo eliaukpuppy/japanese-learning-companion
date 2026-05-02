@@ -91,6 +91,7 @@ export default function JapaneseLearningCompanion() {
   const [tab, setTab] = useState("today");
   const [answersVisible, setAnswersVisible] = useState({});
   const [expandedLesson, setExpandedLesson] = useState(null);
+  const [lessonGroupFilter, setLessonGroupFilter] = useState("all");
   const importInputRef = useRef(null);
 
   useEffect(() => savePlan(plan), [plan]);
@@ -108,6 +109,22 @@ export default function JapaneseLearningCompanion() {
   const wrongQuestionCount = Object.values(plan.wrongQuestions).filter(Boolean).length;
   const todayDay = new Date().getDate();
   const todayCheckin = plan.checkins.find((c) => c.day === todayDay);
+  const minnaUpperBookLessons = useMemo(() => minnaUpperLessons.slice(0, 25), []);
+  const upperDoneCount = useMemo(() => minnaUpperBookLessons.filter((lesson) => !!plan.lessonChecks[lesson.lessonNumber]).length, [minnaUpperBookLessons, plan.lessonChecks]);
+  const lessonGroups = [
+    { id: "all", label: "全部", lessonRange: null },
+    { id: "noun-basic", label: "名词句基础：第1–3课", lessonRange: [1, 3] },
+    { id: "verb-particle", label: "动词与助词：第4–7课", lessonRange: [4, 7] },
+    { id: "adj-existence", label: "形容词与存在：第8–12课", lessonRange: [8, 12] },
+    { id: "te-nai-dictionary", label: "て形/ない形/辞书形：第13–18课", lessonRange: [13, 18] },
+    { id: "plain-conditional", label: "普通形到条件句：第19–25课", lessonRange: [19, 25] }
+  ];
+  const filteredLessons = useMemo(() => {
+    const selected = lessonGroups.find((group) => group.id === lessonGroupFilter);
+    if (!selected || !selected.lessonRange) return minnaUpperBookLessons;
+    const [start, end] = selected.lessonRange;
+    return minnaUpperBookLessons.filter((lesson) => lesson.lessonNumber >= start && lesson.lessonNumber <= end);
+  }, [lessonGroupFilter, minnaUpperBookLessons]);
 
   const tabTransition = { initial: { opacity: 0, y: 6 }, animate: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -6 }, transition: { duration: 0.2 } };
 
@@ -186,8 +203,29 @@ export default function JapaneseLearningCompanion() {
         </section>
       </motion.main>}
 
-      {tab === "route" && <motion.main key="route" className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3" {...tabTransition}>
-        {minnaUpperLessons.slice(0, 25).map((lesson) => {
+      {tab === "route" && <motion.main key="route" className="space-y-4" {...tabTransition}>
+        <section className="rounded-[2rem] border border-rose-100 bg-gradient-to-br from-rose-100 via-amber-50 to-violet-100 p-6 shadow-[0_14px_30px_rgba(244,114,182,0.16)]">
+          <h2 className="text-2xl font-bold text-stone-800">大家的日语 初级上册</h2>
+          <p className="mt-2 text-sm text-stone-700">第1课–第25课｜核心句型・助词・动词变形・易混点</p>
+          <p className="mt-3 inline-block rounded-full bg-white/80 px-4 py-1 text-sm font-semibold text-rose-700">已完成 {upperDoneCount} / 25 课</p>
+        </section>
+
+        <section className="rounded-[2rem] border border-rose-100 bg-white/80 p-4 shadow-[0_10px_22px_rgba(251,113,133,0.12)]">
+          <div className="flex flex-wrap gap-2">
+            {lessonGroups.map((group) => (
+              <button
+                key={group.id}
+                onClick={() => setLessonGroupFilter(group.id)}
+                className={`rounded-full px-4 py-2 text-xs font-semibold transition sm:text-sm ${lessonGroupFilter === group.id ? "bg-rose-500 text-white shadow-[0_8px_16px_rgba(244,114,182,0.2)]" : "bg-rose-100 text-rose-700 hover:bg-rose-200"}`}
+              >
+                {group.label}
+              </button>
+            ))}
+          </div>
+        </section>
+
+        <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {filteredLessons.map((lesson) => {
           const isExpanded = expandedLesson === lesson.lessonNumber;
           const isDone = !!plan.lessonChecks[lesson.lessonNumber];
           return (
@@ -258,6 +296,13 @@ export default function JapaneseLearningCompanion() {
             </section>
           );
         })}
+        </section>
+
+        <section className="rounded-[2rem] border border-dashed border-violet-200 bg-gradient-to-br from-violet-50 via-rose-50 to-amber-50 p-6 shadow-[0_12px_30px_rgba(216,180,254,0.18)]">
+          <h3 className="text-xl font-bold text-violet-800">大家的日语 初级下册</h3>
+          <p className="mt-2 text-sm text-violet-700">第26课–第50课｜待补充</p>
+          <p className="mt-3 text-sm text-stone-600">等上册复习稳定后，再逐步加入下册内容。</p>
+        </section>
       </motion.main>}
 
       {tab === "quick" && <motion.main key="quick" className="grid gap-5 md:grid-cols-2" {...tabTransition}>{[quickReference.particles,quickReference.verbForms,quickReference.adjectiveNoun,quickReference.confusionPairs].map((sec)=><section key={sec.title} className={cardClass}><h2 className="flex items-center gap-2 text-lg font-bold"><BookOpen size={16} className="text-rose-500" />{sec.title}</h2><ul className="mt-2 space-y-2 text-sm">{sec.items.map((item,idx)=><li key={idx}>{typeof item==="string"?item:item.particle?`${item.particle}：${item.usage}（${item.example}）`:`${item.pair}：${item.tip}`}</li>)}</ul></section>)}</motion.main>}
