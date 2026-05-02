@@ -117,22 +117,73 @@ export default function JapaneseLearningCompanion() {
       {[["today", "今日", CalendarCheck],["route", "课程", Target],["quick", "速查", ListChecks],["practice", "练习", PenSquare],["checkin", "打卡", Flame],["resources", "资源", BookOpen]].map(([key,label,Icon]) => <button key={key} onClick={()=>setTab(key)} className={`flex items-center justify-center gap-2 rounded-2xl px-3 py-3 text-sm font-semibold transition ${tab===key?"bg-rose-500 text-white":"text-stone-600 hover:bg-rose-50"}`}><Icon size={17}/>{label}</button>)}
     </nav>
     <AnimatePresence mode="wait">
-      {tab === "today" && <motion.main key="today" className="space-y-4" {...tabTransition}>
-        <section className="rounded-[2rem] border border-rose-100 bg-gradient-to-br from-rose-100 via-orange-50 to-violet-100 p-6 shadow-[0_12px_30px_rgba(244,114,182,0.16)]">
+      {tab === "today" && <motion.main key="today" className="space-y-5" {...tabTransition}>
+        <section className="rounded-[2rem] border border-rose-100 bg-gradient-to-br from-rose-100 via-amber-50 to-violet-100 p-6 shadow-[0_14px_30px_rgba(244,114,182,0.16)]">
           <div className="flex items-center gap-2 text-rose-600"><Sparkles size={16} /><Heart size={16} /><BookOpen size={16} /></div>
           <h2 className="mt-2 text-xl font-bold">まなちゃん</h2>
-          <p className="mt-2 text-sm">今天也只要学一点点，就已经很棒啦 🌸</p>
-        </section>
-        <section className={cardClass}>
-          <div className="flex items-center justify-between gap-3"><h2 className="text-xl font-bold">总进度</h2><span className="rounded-full bg-violet-100 px-3 py-1 text-xs font-semibold text-violet-700">{rankTitle}</span></div>
-          <p className="mt-2 text-sm text-stone-600">{overallProgress}% 已完成</p>
-          <div className="mt-3 h-3 w-full overflow-hidden rounded-full bg-rose-100">
-            <div className="h-full rounded-full bg-gradient-to-r from-rose-300 via-fuchsia-300 to-violet-300" style={{ width: `${overallProgress}%` }} />
+          <p className="mt-2 text-sm text-stone-700">今天也只要学一点点，就已经很棒啦 🌸</p>
+          <div className="mt-4 flex flex-wrap gap-2 text-xs font-semibold">
+            <span className="rounded-full bg-white/70 px-3 py-1 text-rose-700">今日状态：慢慢来</span>
+            <span className="rounded-full bg-white/70 px-3 py-1 text-violet-700">推荐学习：30分钟</span>
           </div>
-          <span className="mt-3 inline-block rounded-full bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-700">{progressHint}</span>
         </section>
-        <section className={cardClass}><h2 className="flex items-center gap-2 text-xl font-bold"><Flower2 size={18} className="text-rose-500" />当前阶段</h2><p className="mt-2 font-semibold">{currentStage.name}</p><p className="text-sm text-stone-600">阶段时长：{currentStage.duration}</p></section>
-        <section className={cardClass}><h2 className="flex items-center gap-2 text-xl font-bold"><Sparkles size={18} className="text-rose-500" />阶段目标</h2><p className="mt-2 text-sm">{currentStage.goal}</p></section>
+
+        <section className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          <section className={cardClass}>
+            <h2 className="flex items-center gap-2 text-xl font-bold"><ListChecks size={18} className="text-rose-500" />今日30分钟任务清单</h2>
+            <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {[
+                ["5分钟", "复习昨天的词和句型"],
+                ["10分钟", "复习当前课程重点"],
+                ["10分钟", "做一组小练习"],
+                ["5分钟", "写一句日语输出"]
+              ].map(([time, task]) => (
+                <div key={task} className="rounded-[1.5rem] border border-rose-100 bg-gradient-to-br from-white to-rose-50 p-3 shadow-[0_8px_18px_rgba(251,113,133,0.12)] transition duration-200 hover:-translate-y-1">
+                  <p className="text-xs font-semibold text-rose-500">{time}</p>
+                  <p className="mt-1 text-sm font-medium text-stone-700">☐ {task}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className={cardClass}>
+            <h2 className="flex items-center gap-2 text-xl font-bold"><Target size={18} className="text-violet-500" />今日推荐课程卡</h2>
+            <p className="mt-3 text-sm font-semibold text-stone-700">今日推荐：第10课 存在句与方位词</p>
+            <p className="mt-2 text-sm text-stone-600">重点：あります / います / に / が</p>
+            <p className="mt-2 text-sm text-stone-600">适合你当前阶段，复习后再做1道助词练习。</p>
+            <button onClick={() => setTab("route")} className="mt-4 rounded-full bg-gradient-to-r from-rose-400 to-violet-400 px-4 py-2 text-sm font-semibold text-white shadow-[0_8px_16px_rgba(244,114,182,0.2)] hover:from-rose-500 hover:to-violet-500">去课程页复习</button>
+          </section>
+        </section>
+
+        <section className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          <section className={cardClass}>
+            <h2 className="flex items-center gap-2 text-xl font-bold"><PenSquare size={18} className="text-rose-500" />今日一句</h2>
+            <p className="mt-3 text-base font-semibold text-stone-800">机の上に本があります。</p>
+            <p className="mt-2 text-sm text-stone-600">中文：桌子上有书。</p>
+            <p className="mt-2 rounded-2xl bg-amber-50 p-3 text-sm text-amber-700">小提示：あります 用于物品或植物的存在。</p>
+          </section>
+
+          <section className={cardClass}>
+            <h2 className="flex items-center gap-2 text-xl font-bold"><Flower2 size={18} className="text-violet-500" />本周兴趣小甜点</h2>
+            <p className="mt-3 text-sm text-stone-600">本周选漫画/乙游/乙抓中的3句话。</p>
+            <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-stone-700">
+              <li>猜意思 → 查关键词 → 找句尾 → 复述情绪</li>
+              <li>不需要每天做，每周集中一次就好。</li>
+            </ul>
+          </section>
+        </section>
+
+        <section className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          <section className={cardClass}>
+            <div className="flex items-center justify-between gap-3"><h2 className="text-xl font-bold">总进度</h2><span className="rounded-full bg-violet-100 px-3 py-1 text-xs font-semibold text-violet-700">{rankTitle}</span></div>
+            <p className="mt-2 text-sm text-stone-600">{overallProgress}% 已完成</p>
+            <div className="mt-3 h-3 w-full overflow-hidden rounded-full bg-rose-100">
+              <div className="h-full rounded-full bg-gradient-to-r from-rose-300 via-fuchsia-300 to-violet-300" style={{ width: `${overallProgress}%` }} />
+            </div>
+            <span className="mt-3 inline-block rounded-full bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-700">{progressHint}</span>
+          </section>
+          <section className={cardClass}><h2 className="flex items-center gap-2 text-xl font-bold"><Sparkles size={18} className="text-rose-500" />阶段目标</h2><p className="mt-2 text-sm">{currentStage.goal}</p><p className="mt-2 text-sm text-stone-600">当前阶段：{currentStage.name}（{currentStage.duration}）</p></section>
+        </section>
       </motion.main>}
 
       {tab === "route" && <motion.main key="route" className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3" {...tabTransition}>
