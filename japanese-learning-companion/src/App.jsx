@@ -4,6 +4,60 @@ import { BookOpen, CalendarCheck, CheckCircle2, Heart, NotebookPen, Sparkles, Ta
 
 const STORAGE_KEY = "nihongo-companion-v1";
 
+const COURSE_STORAGE_KEY = "minna-course-v1";
+
+const detailedLessons = {
+  1: {
+    goal: "掌握です/ではありません句型，能做基础自我介绍。",
+    grammar: ["NはNです", "NはNじゃありません", "か 疑问句"],
+    examples: ["わたしは リンです。", "これは 日本語のノートです。"],
+    task: "写3句自我介绍，并录音跟读2遍。",
+    quiz: "把“我是学生”翻成日语，并改成否定句。",
+    tip: "注意“は”读作“wa”，不是“ha”。"
+  },
+  2: {
+    goal: "掌握指示代词与物品归属表达。",
+    grammar: ["これ/それ/あれ", "このN/そのN/あのN", "NのN"],
+    examples: ["これは だれのかさですか。", "そのほんは せんせいのです。"],
+    task: "用房间里的物品练习这/那/那边各2句。",
+    quiz: "选择正确词：___ ほんは わたしのです。(この/これ)",
+    tip: "“この”后必须接名词，“これ”可单独使用。"
+  },
+  3: { goal: "掌握ここ/そこ/あそこ与场所问答。", grammar: ["ここ/そこ/あそこ", "Nは どこですか", "Nも"], examples: ["トイレは ここです。", "ぎんこうは あそこです。"], task: "画一张教室地图并写5句位置句。", quiz: "把“银行在那边”翻成日语。", tip: "“どこ”问地点，回答要配合场所词。" },
+  4: { goal: "掌握时间表达与动词ます形基础。", grammar: ["Vます", "Vません", "〜ますか"], examples: ["まいにち 7じに おきます。", "きょうは べんきょうしません。"], task: "记录今天作息，写4句时间+动作。", quiz: "把“你几点睡觉？”翻成日语。", tip: "时间词后常接“に”，但“きょう/あした”通常不用。" },
+  5: { goal: "会说去哪里、怎么去。", grammar: ["Nへ いきます", "Nで いきます", "〜から〜まで"], examples: ["がっこうへ じてんしゃで いきます。", "9じから 5じまで はたらきます。"], task: "写你的通勤/上学路线3句。", quiz: "把“我坐地铁去车站”翻成日语。", tip: "助词“へ”表示方向，读音为“e”。" },
+  6: { goal: "掌握动作对象与共同动作表达。", grammar: ["Nを V", "Nと V", "なん/なに"], examples: ["パンを たべます。", "ともだちと えいがを みます。"], task: "写今天做的3个动作（对象+动词）。", quiz: "填空：わたしは ほん___ よみます。", tip: "“を”标记动作对象，不要漏写。" },
+  7: { goal: "会说给予与收受（あげる/もらう）。", grammar: ["Nを あげます", "Nを もらいます", "だれに"], examples: ["いもうとに はなを あげました。", "せんせいに ほんを もらいました。"], task: "写2句送礼、2句收礼。", quiz: "翻译“我从朋友那里收到了巧克力”。", tip: "“に”提示动作对象（给谁/从谁）。" },
+  8: { goal: "掌握形容词句型与比较基础。", grammar: ["Aいです / Aなです", "Aくないです", "Aでした"], examples: ["このまちは にぎやかです。", "きのうは さむかったです。"], task: "描述今天的天气和心情各2句。", quiz: "把“这家店不安静”翻成日语。", tip: "い形容词和な形容词变形规则不同。" },
+  9: { goal: "掌握喜欢/讨厌/上手等表达。", grammar: ["Nが すきです", "Nが きらいです", "Nが じょうずです"], examples: ["わたしは りょうりが すきです。", "かれは えが じょうずです。"], task: "写你喜欢的3件事并说明原因。", quiz: "填空：わたしは ねこ___ すきです。", tip: "此类句型常用“が”，不是“を”。" },
+  10: { goal: "掌握存在句与位置描述。", grammar: ["Nが あります/います", "Nは 〜に あります/います"], examples: ["つくえのうえに ほんが あります。", "こうえんに こどもが います。"], task: "观察房间并写5句存在句。", quiz: "翻译“教室里有老师”。", tip: "无生命多用あります，有生命多用います。" }
+};
+
+const lessonList = Array.from({ length: 50 }, (_, i) => {
+  const lessonNo = i + 1;
+  const detail = detailedLessons[lessonNo];
+  return {
+    id: lessonNo,
+    title: `第${lessonNo}课`,
+    volume: lessonNo <= 25 ? "初级上册" : "初级下册",
+    goal: detail?.goal || "待完善",
+    grammar: detail?.grammar || ["待完善"],
+    examples: detail?.examples || ["待完善"],
+    task: detail?.task || "待完善",
+    quiz: detail?.quiz || "待完善",
+    tip: detail?.tip || "待完善"
+  };
+});
+
+function loadCourseState() {
+  try {
+    const raw = localStorage.getItem(COURSE_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : { progress: {}, notes: {}, quizDone: {}, openLessonId: 1 };
+  } catch {
+    return { progress: {}, notes: {}, quizDone: {}, openLessonId: 1 };
+  }
+}
+
 const initialPlan = {
   profile: {
     title: "我的日语自学小搭子",
@@ -154,8 +208,12 @@ export default function JapaneseLearningCompanion() {
   const [plan, setPlan] = useState(loadPlan);
   const [tab, setTab] = useState("today");
   const [noteText, setNoteText] = useState("");
+  const [courseState, setCourseState] = useState(loadCourseState);
 
   useEffect(() => savePlan(plan), [plan]);
+  useEffect(() => {
+    localStorage.setItem(COURSE_STORAGE_KEY, JSON.stringify(courseState));
+  }, [courseState]);
 
   const currentStage = useMemo(
     () => plan.stages.find((s) => s.id === plan.currentStageId) || plan.stages[0],
@@ -197,6 +255,34 @@ export default function JapaneseLearningCompanion() {
     setNoteText("");
   }
 
+  function toggleLessonDone(lessonId) {
+    setCourseState((prev) => ({
+      ...prev,
+      progress: { ...prev.progress, [lessonId]: !prev.progress[lessonId] }
+    }));
+  }
+
+  function toggleQuizDone(lessonId) {
+    setCourseState((prev) => ({
+      ...prev,
+      quizDone: { ...prev.quizDone, [lessonId]: !prev.quizDone[lessonId] }
+    }));
+  }
+
+  function updateLessonNote(lessonId, value) {
+    setCourseState((prev) => ({
+      ...prev,
+      notes: { ...prev.notes, [lessonId]: value }
+    }));
+  }
+
+  const upperLessons = lessonList.filter((l) => l.id <= 25);
+  const lowerLessons = lessonList.filter((l) => l.id >= 26);
+  const doneCount = lessonList.filter((l) => courseState.progress[l.id]).length;
+  const upperDone = upperLessons.filter((l) => courseState.progress[l.id]).length;
+  const lowerDone = lowerLessons.filter((l) => courseState.progress[l.id]).length;
+  const totalLessonProgress = Math.round((doneCount / lessonList.length) * 100);
+
   function resetDemo() {
     localStorage.removeItem(STORAGE_KEY);
     setPlan(initialPlan);
@@ -231,10 +317,11 @@ export default function JapaneseLearningCompanion() {
           </div>
         </header>
 
-        <nav className="mb-6 grid grid-cols-4 gap-2 rounded-3xl bg-white/70 p-2 shadow-sm ring-1 ring-rose-100 backdrop-blur">
+        <nav className="mb-6 grid grid-cols-5 gap-2 rounded-3xl bg-white/70 p-2 shadow-sm ring-1 ring-rose-100 backdrop-blur">
           {[
             ["today", "今日", CalendarCheck],
             ["route", "路线", Target],
+            ["course", "课程", BookOpen],
             ["resources", "资源", BookOpen],
             ["notes", "笔记", NotebookPen]
           ].map(([key, label, Icon]) => (
@@ -395,23 +482,126 @@ export default function JapaneseLearningCompanion() {
           </motion.main>
         )}
 
-        {tab === "resources" && (
+                {tab === "course" && (
+          <motion.main initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
+            <section className="grid gap-4 md:grid-cols-3">
+              {[
+                ["初级上册", `${Math.round((upperDone / upperLessons.length) * 100)}%`, `${upperDone}/${upperLessons.length}`],
+                ["初级下册", `${Math.round((lowerDone / lowerLessons.length) * 100)}%`, `${lowerDone}/${lowerLessons.length}`],
+                ["总完成进度", `${totalLessonProgress}%`, `${doneCount}/${lessonList.length}`]
+              ].map(([label, progress, count]) => (
+                <div key={label} className="rounded-[2rem] bg-white/80 p-5 shadow-sm ring-1 ring-rose-100">
+                  <p className="text-sm text-rose-500">{label}</p><p className="mt-1 text-3xl font-black text-rose-600">{progress}</p><p className="text-sm text-stone-500">{count}</p>
+                </div>
+              ))}
+            </section>
+
+            <section className="rounded-[2rem] bg-white/80 p-5 shadow-sm ring-1 ring-rose-100">
+              <h2 className="mb-4 text-xl font-bold text-stone-900">《大家的日语》课程总览（第1课–第50课）</h2>
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+                {lessonList.map((lesson) => {
+                  const active = courseState.openLessonId === lesson.id;
+                  const done = Boolean(courseState.progress[lesson.id]);
+                  return (
+                    <button key={lesson.id} onClick={() => setCourseState((prev) => ({ ...prev, openLessonId: lesson.id }))} className={`rounded-2xl border p-3 text-left transition ${active ? "border-rose-300 bg-rose-50" : "border-rose-100 bg-white hover:bg-rose-50"}`}>
+                      <div className="flex items-center justify-between"><span className="font-bold text-stone-900">{lesson.title}</span>{done && <CheckCircle2 size={16} className="text-emerald-500" />}</div>
+                      <p className="mt-1 text-xs text-stone-500">{lesson.volume}</p>
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+
+            {lessonList.filter((l) => l.id === courseState.openLessonId).map((lesson) => (
+              <section key={lesson.id} className="rounded-[2rem] bg-white/80 p-6 shadow-sm ring-1 ring-rose-100">
+                <h3 className="text-2xl font-bold text-stone-900">{lesson.title}｜{lesson.volume}</h3>
+                <p className="mt-3 text-sm leading-6 text-stone-700"><span className="font-semibold text-rose-600">学习目标：</span>{lesson.goal}</p>
+                <p className="mt-2 text-sm leading-6 text-stone-700"><span className="font-semibold text-rose-600">核心语法点：</span>{lesson.grammar.join("、")}</p>
+                <p className="mt-2 text-sm leading-6 text-stone-700"><span className="font-semibold text-rose-600">原创例句：</span>{lesson.examples.join(" / ")}</p>
+                <p className="mt-2 text-sm leading-6 text-stone-700"><span className="font-semibold text-rose-600">今日任务：</span>{lesson.task}</p>
+                <p className="mt-2 text-sm leading-6 text-stone-700"><span className="font-semibold text-rose-600">原创小测验：</span>{lesson.quiz}</p>
+                <p className="mt-2 text-sm leading-6 text-stone-700"><span className="font-semibold text-violet-600">易错提醒：</span>{lesson.tip}</p>
+
+                <textarea value={courseState.notes[lesson.id] || ""} onChange={(e) => updateLessonNote(lesson.id, e.target.value)} placeholder="我的笔记..." className="mt-4 min-h-24 w-full resize-none rounded-3xl border border-rose-100 bg-white p-4 text-sm outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-100" />
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <button onClick={() => toggleLessonDone(lesson.id)} className={`rounded-2xl px-4 py-2 text-sm font-bold ${courseState.progress[lesson.id] ? "bg-emerald-500 text-white" : "bg-rose-500 text-white"}`}>{courseState.progress[lesson.id] ? "已完成" : "标记完成"}</button>
+                  <button onClick={() => toggleQuizDone(lesson.id)} className={`rounded-2xl px-4 py-2 text-sm font-bold ${courseState.quizDone[lesson.id] ? "bg-violet-500 text-white" : "bg-stone-100 text-stone-700"}`}>{courseState.quizDone[lesson.id] ? "小测已完成" : "标记小测完成"}</button>
+                </div>
+              </section>
+            ))}
+          </motion.main>
+        )}
+
+{tab === "resources" && (
           <motion.main initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
             {[
-              ["主线教材", "《大家的日语》或 IRODORI", "每天用它推进主线，不要同时开太多教材。"],
-              ["语法查漏", "Tae Kim / Bunpro / 语法书", "遇到看不懂的语法再查，不要把查资料变成主线。"],
-              ["假名与汉字", "假名测验 + 汉字卡片", "每天少量复习，比周末狂背更稳。"],
-              ["听力跟读", "教材音频 / 慢速日语", "目标不是一次听懂，而是让耳朵熟悉句尾和节奏。"],
-              ["阅读过渡", "分级读物 / 简单漫画", "从带图、短句、重复率高的材料开始。"],
-              ["兴趣输入", "漫画、日乙、乙抓", "每周集中一次，只精读/精听3句话就算完成。"]
-            ].map(([title, name, desc]) => (
-              <div key={title} className="rounded-[2rem] bg-white/80 p-6 shadow-sm ring-1 ring-rose-100">
+              {
+                title: "主线教材",
+                name: "系统推进，先打稳语法和表达",
+                desc: "主线一次选1套，按章节稳步推进。",
+                links: [
+                  { label: "IRODORI", href: "https://www.irodori.jpf.go.jp/" },
+                  { label: "Marugoto", href: "https://marugoto.jpf.go.jp/" }
+                ]
+              },
+              {
+                title: "中文辅助",
+                name: "中文讲解更友好，适合查漏补缺",
+                desc: "看不懂时用中文资源补理解，再回到主线。",
+                links: [
+                  { label: "MOOC《大学日语》", href: "https://www.icourse163.org/course/0502XJTU044-1002533017" },
+                  { label: "MOOC《综合日语》", href: "https://www.icourse163.org/course/BLCU-1464046179" },
+                  { label: "沪江初级专题", href: "https://jp.hjenglish.com/new/zt/chuji/" }
+                ]
+              },
+              {
+                title: "听力输入",
+                name: "先听熟节奏，再追求全懂",
+                desc: "每天5分钟，反复听+跟读短音频更有效。",
+                links: [
+                  { label: "NHK Easy Japanese", href: "https://www.nhk.or.jp/lesson/" },
+                  { label: "Marugoto", href: "https://marugoto.jpf.go.jp/" }
+                ]
+              },
+              {
+                title: "阅读输入",
+                name: "从短句和分级读物开始",
+                desc: "优先选带图、短句、重复率高的材料，降低挫败感。",
+                links: [
+                  { label: "Tadoku Free Books", href: "https://tadoku.org/japanese/en/free-books-en/" },
+                  { label: "NHK Easy Japanese", href: "https://www.nhk.or.jp/lesson/" }
+                ]
+              },
+              {
+                title: "考试检测",
+                name: "定期做题，追踪阶段进度",
+                desc: "每月做一次样题，按错题类型复盘。",
+                links: [
+                  { label: "JLPT 官方样题", href: "https://www.jlpt.jp/e/samples/sampleindex.html" },
+                  { label: "Kana Quiz", href: "https://kana-quiz.tofugu.com/" }
+                ]
+              }
+            ].map((resource) => (
+              <div key={resource.title} className="rounded-[2rem] bg-white/80 p-6 shadow-sm ring-1 ring-rose-100">
                 <div className="mb-3 inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-rose-100 text-rose-600">
                   <BookOpen size={21} />
                 </div>
-                <h2 className="text-lg font-bold text-stone-900">{title}</h2>
-                <p className="mt-1 font-semibold text-rose-600">{name}</p>
-                <p className="mt-3 text-sm leading-6 text-stone-600">{desc}</p>
+                <h2 className="text-lg font-bold text-stone-900">{resource.title}</h2>
+                <p className="mt-1 font-semibold text-rose-600">{resource.name}</p>
+                <p className="mt-3 text-sm leading-6 text-stone-600">{resource.desc}</p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {resource.links.map((link) => (
+                    <a
+                      key={link.href}
+                      href={link.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="rounded-full bg-rose-100 px-3 py-1.5 text-xs font-semibold text-rose-700 transition hover:bg-rose-200"
+                    >
+                      {link.label}
+                    </a>
+                  ))}
+                </div>
               </div>
             ))}
           </motion.main>
