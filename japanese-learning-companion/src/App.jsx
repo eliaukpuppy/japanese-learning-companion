@@ -52,6 +52,32 @@ const allProgress = (stages) => {
   return Math.round((units.filter((u) => u.done).length / units.length) * 100);
 };
 
+const resourceCategories = [
+  {
+    title: "词典 / 语法",
+    links: [
+      { label: "Weblio 国语辞典", href: "https://www.weblio.jp/" },
+      { label: "Jisho 英日词典", href: "https://jisho.org/" },
+      { label: "Imabi 语法", href: "https://imabi.org/" }
+    ]
+  },
+  {
+    title: "听力 / 播客",
+    links: [
+      { label: "Nihongo con Teppei", href: "https://www.youtube.com/@nihongoconteppei" },
+      { label: "Comprehensible Japanese", href: "https://www.youtube.com/@ComprehensibleJapanese" }
+    ]
+  },
+  {
+    title: "短文阅读 / 多读",
+    links: [
+      { label: "NHK News Web Easy", href: "https://www3.nhk.or.jp/news/easy/" },
+      { label: "青空文库", href: "https://www.aozora.gr.jp/" },
+      { label: "小説家になろう", href: "https://syosetu.com/" }
+    ]
+  }
+];
+
 export default function JapaneseLearningCompanion() {
   const [plan, setPlan] = useState(loadPlan);
   const [tab, setTab] = useState("today");
@@ -70,6 +96,35 @@ export default function JapaneseLearningCompanion() {
       {[["today", "今日", CalendarCheck],["route", "课程", Target],["quick", "速查", ListChecks],["practice", "练习", PenSquare],["checkin", "打卡", Flame],["resources", "资源", BookOpen]].map(([key,label,Icon]) => <button key={key} onClick={()=>setTab(key)} className={`flex items-center justify-center gap-2 rounded-2xl px-3 py-3 text-sm font-semibold ${tab===key?"bg-rose-500 text-white":"text-stone-600 hover:bg-rose-50"}`}><Icon size={17}/>{label}</button>)}
     </nav>
 
+    {tab === "today" && <motion.main className="space-y-4">
+      <section className="rounded-[2rem] bg-white/80 p-6 shadow-sm ring-1 ring-rose-100">
+        <h2 className="text-xl font-bold">当前阶段</h2>
+        <p className="mt-2 font-semibold">{currentStage.name}</p>
+        <p className="text-sm text-stone-600">阶段时长：{currentStage.duration}</p>
+      </section>
+      <section className="rounded-[2rem] bg-white/80 p-6 shadow-sm ring-1 ring-rose-100">
+        <h2 className="text-xl font-bold">阶段目标</h2>
+        <p className="mt-2 text-sm">{currentStage.goal}</p>
+      </section>
+      <section className="rounded-[2rem] bg-white/80 p-6 shadow-sm ring-1 ring-rose-100">
+        <h2 className="text-xl font-bold">今天4件小任务</h2>
+        <ul className="mt-2 list-disc pl-5 text-sm space-y-1">
+          <li>复习昨天错题 + 口头重说1遍（8分钟）</li>
+          <li>学习1个新语法并造2句（8分钟）</li>
+          <li>精听/跟读1段音频（8分钟）</li>
+          <li>写1句今天发生的事并打卡（6分钟）</li>
+        </ul>
+      </section>
+      <section className="rounded-[2rem] bg-white/80 p-6 shadow-sm ring-1 ring-rose-100">
+        <h2 className="text-xl font-bold">30分钟学习节奏</h2>
+        <p className="mt-2 text-sm">5分钟热身复习 → 10分钟新输入 → 10分钟输出练习 → 5分钟复盘记录。</p>
+      </section>
+      <section className="rounded-[2rem] bg-white/80 p-6 shadow-sm ring-1 ring-rose-100">
+        <h2 className="text-xl font-bold">每周兴趣输入提示</h2>
+        <p className="mt-2 text-sm">{plan.profile.interestRule}：每周选一个你最感兴趣的主题（漫画、游戏、广播剧），集中听读30–60分钟，并摘3个高频表达。</p>
+      </section>
+    </motion.main>}
+
     {tab === "route" && <motion.main className="space-y-4">{minnaUpperLessons.slice(0,25).map((lesson)=><section key={lesson.lessonNumber} className="rounded-[2rem] bg-white/80 p-6 shadow-sm ring-1 ring-rose-100"><div className="flex justify-between"><h2 className="text-xl font-bold">{lesson.title}</h2><button onClick={()=>toggleLessonCheck(lesson.lessonNumber)} className={`rounded-full px-3 py-1 text-sm font-semibold ${plan.lessonChecks[lesson.lessonNumber]?"bg-emerald-100 text-emerald-700":"bg-rose-100 text-rose-700"}`}>{plan.lessonChecks[lesson.lessonNumber]?"已完成":"标记完成"}</button></div><p className="mt-2 text-sm">本课目标：{lesson.goal}</p><p className="mt-3 font-semibold">核心句型/语法</p><ul className="list-disc pl-5 text-sm">{lesson.grammarPoints.map((g)=><li key={g}>{g}</li>)}</ul><p className="mt-3 font-semibold">关键词/助词/形式</p><div className="mt-1 flex flex-wrap gap-2">{lesson.keywords.map((k)=><span key={k} className="rounded-full bg-rose-100 px-2 py-1 text-xs">{k}</span>)}</div><p className="mt-3 font-semibold">例句</p><ul className="text-sm">{lesson.examples.map((e,idx)=><li key={idx}>{e.jp}（{e.cn}）</li>)}</ul><p className="mt-3 font-semibold">小练习</p><ul className="list-disc pl-5 text-sm">{lesson.miniPractice.map((m,idx)=><li key={idx}>{m.prompt}</li>)}</ul></section>)}</motion.main>}
 
     {tab === "quick" && <motion.main className="grid gap-5 md:grid-cols-2">{[quickReference.particles,quickReference.verbForms,quickReference.adjectiveNoun,quickReference.confusionPairs].map((sec)=><section key={sec.title} className="rounded-[2rem] bg-white/80 p-6 shadow-sm ring-1 ring-rose-100"><h2 className="text-lg font-bold">{sec.title}</h2><ul className="mt-2 space-y-2 text-sm">{sec.items.map((item,idx)=><li key={idx}>{typeof item==="string"?item:item.particle?`${item.particle}：${item.usage}（${item.example}）`:`${item.pair}：${item.tip}`}</li>)}</ul></section>)}</motion.main>}
@@ -77,5 +132,20 @@ export default function JapaneseLearningCompanion() {
     {tab === "practice" && <motion.main className="space-y-4">{[["A. 选择助词",practiceQuestions.sectionA],["B. 翻译成日语",practiceQuestions.sectionB],["C. 动词变形",practiceQuestions.sectionC]].map(([label,sec])=><section key={sec.title} className="rounded-[2rem] bg-white/80 p-6 shadow-sm ring-1 ring-rose-100"><h2 className="text-lg font-bold">{label}</h2>{sec.questions.map((q)=><div key={q.id} className="mt-3 rounded-2xl bg-stone-50 p-3"><p className="text-sm font-medium">{q.id}. {q.prompt}</p>{q.choices && <p className="mt-1 text-xs text-stone-500">选项：{q.choices.join(" / ")}</p>}<div className="mt-2 flex gap-2"><button onClick={()=>setAnswersVisible((v)=>({...v,[q.id]:!v[q.id]}))} className="rounded-full bg-rose-100 px-3 py-1 text-xs">{answersVisible[q.id]?"隐藏答案":"查看答案"}</button><button onClick={()=>toggleWrongQuestion(q.id)} className={`rounded-full px-3 py-1 text-xs ${plan.wrongQuestions[q.id]?"bg-amber-200":"bg-stone-200"}`}>{plan.wrongQuestions[q.id]?"已标记错题":"标记错题"}</button></div>{answersVisible[q.id] && <p className="mt-1 text-sm text-rose-700">参考答案：{q.answer}</p>}</div>)}</section>)}</motion.main>}
 
     {tab === "checkin" && <motion.main className="space-y-3">{checkinPlan.items.map((item)=>{const state=plan.checkins.find((c)=>c.day===item.day)||{done:false,sentence:"",mistakes:""}; return <section key={item.day} className="rounded-[1.5rem] bg-white/80 p-4 shadow-sm ring-1 ring-rose-100"><div className="flex items-center justify-between"><h3 className="font-bold">Day {item.day}</h3><button onClick={()=>toggleCheckin(item.day)} className={`rounded-full px-3 py-1 text-xs ${state.done?"bg-rose-500 text-white":"bg-rose-100 text-rose-700"}`}>{state.done?"已完成":"完成"}</button></div><p className="text-sm mt-1">复习课次：{item.focus}</p><p className="text-sm">今日重点：{item.focus}</p><input value={state.sentence} onChange={(e)=>updateCheckinField(item.day,"sentence",e.target.value)} placeholder="造句" className="mt-2 w-full rounded-xl border border-rose-100 px-3 py-2 text-sm"/><input value={state.mistakes} onChange={(e)=>updateCheckinField(item.day,"mistakes",e.target.value)} placeholder="错题" className="mt-2 w-full rounded-xl border border-rose-100 px-3 py-2 text-sm"/></section>;})}</motion.main>}
+
+    {tab === "resources" && <motion.main className="grid gap-5 md:grid-cols-2">
+      {resourceCategories.map((category) => (
+        <section key={category.title} className="rounded-[2rem] bg-white/80 p-6 shadow-sm ring-1 ring-rose-100">
+          <h2 className="text-lg font-bold">{category.title}</h2>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {category.links.map((link) => (
+              <a key={link.href} href={link.href} target="_blank" rel="noreferrer" className="rounded-full bg-rose-100 px-3 py-1 text-sm text-rose-700 hover:bg-rose-200">
+                {link.label}
+              </a>
+            ))}
+          </div>
+        </section>
+      ))}
+    </motion.main>}
   </div></div>;
 }
