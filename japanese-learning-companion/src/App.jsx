@@ -50,11 +50,19 @@ const lessonList = Array.from({ length: 50 }, (_, i) => {
 });
 
 function loadCourseState() {
+  const fallback = { progress: {}, notes: {}, quizDone: {}, openLessonId: 1 };
   try {
     const raw = localStorage.getItem(COURSE_STORAGE_KEY);
-    return raw ? JSON.parse(raw) : { progress: {}, notes: {}, quizDone: {}, openLessonId: 1 };
+    if (!raw) return fallback;
+    const parsed = JSON.parse(raw);
+    return {
+      progress: parsed?.progress || {},
+      notes: parsed?.notes || {},
+      quizDone: parsed?.quizDone || {},
+      openLessonId: parsed?.openLessonId || 1
+    };
   } catch {
-    return { progress: {}, notes: {}, quizDone: {}, openLessonId: 1 };
+    return fallback;
   }
 }
 
