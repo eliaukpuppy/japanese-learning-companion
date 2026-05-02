@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { BookOpen, CalendarCheck, CheckCircle2, Heart, NotebookPen, Sparkles, Target, Trophy, RotateCcw, ChevronRight, Clock, Gamepad2 } from "lucide-react";
+import { BookOpen, CalendarCheck, CheckCircle2, Heart, Sparkles, Target, Trophy, RotateCcw, ChevronRight, Clock, Gamepad2, ListChecks, PenSquare, Flame } from "lucide-react";
 
 const STORAGE_KEY = "nihongo-companion-v1";
 
@@ -110,15 +110,21 @@ const initialPlan = {
       stuck: "真实材料满屏不懂时，每天只处理3句话：猜意思、查关键词、找句尾、复述情绪。"
     }
   ],
-  notes: [
-    { id: "n1", date: "今天", text: "本周目标：复习《大家的日语》第1–10课，重新找回手感。" }
-  ]
+  checkins: Array.from({ length: 30 }, (_, i) => ({
+    day: i + 1,
+    done: false
+  }))
 };
 
 function loadPlan() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : initialPlan;
+    const parsed = raw ? JSON.parse(raw) : initialPlan;
+    return {
+      ...initialPlan,
+      ...parsed,
+      checkins: parsed.checkins || initialPlan.checkins
+    };
   } catch {
     return initialPlan;
   }
@@ -153,7 +159,7 @@ function getTodayTasks(stage) {
 export default function JapaneseLearningCompanion() {
   const [plan, setPlan] = useState(loadPlan);
   const [tab, setTab] = useState("today");
-  const [noteText, setNoteText] = useState("");
+  const [showPracticeAnswer, setShowPracticeAnswer] = useState(false);
 
   useEffect(() => savePlan(plan), [plan]);
 
@@ -186,20 +192,18 @@ export default function JapaneseLearningCompanion() {
     setTab("today");
   }
 
-  function addNote() {
-    if (!noteText.trim()) return;
-    const note = {
-      id: `n-${Date.now()}`,
-      date: new Date().toLocaleDateString("zh-CN", { month: "short", day: "numeric" }),
-      text: noteText.trim()
-    };
-    setPlan((prev) => ({ ...prev, notes: [note, ...prev.notes] }));
-    setNoteText("");
-  }
-
   function resetDemo() {
     localStorage.removeItem(STORAGE_KEY);
     setPlan(initialPlan);
+  }
+
+  function toggleCheckin(day) {
+    setPlan((prev) => ({
+      ...prev,
+      checkins: prev.checkins.map((item) =>
+        item.day === day ? { ...item, done: !item.done } : item
+      )
+    }));
   }
 
   return (
@@ -231,12 +235,14 @@ export default function JapaneseLearningCompanion() {
           </div>
         </header>
 
-        <nav className="mb-6 grid grid-cols-4 gap-2 rounded-3xl bg-white/70 p-2 shadow-sm ring-1 ring-rose-100 backdrop-blur">
+        <nav className="mb-6 grid grid-cols-3 gap-2 rounded-3xl bg-white/70 p-2 shadow-sm ring-1 ring-rose-100 backdrop-blur sm:grid-cols-6">
           {[
             ["today", "今日", CalendarCheck],
             ["route", "路线", Target],
+            ["quick", "速查", ListChecks],
+            ["practice", "练习", PenSquare],
+            ["checkin", "打卡", Flame],
             ["resources", "资源", BookOpen],
-            ["notes", "笔记", NotebookPen]
           ].map(([key, label, Icon]) => (
             <button
               key={key}
@@ -541,34 +547,52 @@ export default function JapaneseLearningCompanion() {
           </motion.main>
         )}
 
-        {tab === "notes" && (
-          <motion.main initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="grid gap-6 lg:grid-cols-[.9fr_1.1fr]">
-            <section className="rounded-[2rem] bg-white/80 p-6 shadow-sm ring-1 ring-rose-100">
-              <h2 className="mb-3 text-xl font-bold">写一条学习笔记</h2>
-              <textarea
-                value={noteText}
-                onChange={(e) => setNoteText(e.target.value)}
-                placeholder="比如：今天复习了て形，飲む→飲んで，書く→書いて。"
-                className="min-h-40 w-full resize-none rounded-3xl border border-rose-100 bg-white p-4 text-sm outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
-              />
-              <button onClick={addNote} className="mt-3 w-full rounded-2xl bg-rose-500 px-4 py-3 font-bold text-white shadow-sm hover:bg-rose-600">
-                保存笔记
-              </button>
-              <button onClick={resetDemo} className="mt-3 w-full rounded-2xl bg-stone-100 px-4 py-3 text-sm font-bold text-stone-600 hover:bg-stone-200">
-                重置演示数据
-              </button>
-            </section>
+        {tab === "quick" && (
+          <motion.main initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="grid gap-5 md:grid-cols-2">
+            {["助词总整理", "动词形式总整理", "形容词与名词句整理", "易混点速查"].map((item) => (
+              <section key={item} className="rounded-[2rem] bg-white/80 p-6 shadow-sm ring-1 ring-rose-100">
+                <h2 className="text-lg font-bold text-stone-900">{item}</h2>
+                <p className="mt-2 text-sm text-stone-600">（结构预留）后续补充可检索内容。</p>
+              </section>
+            ))}
+          </motion.main>
+        )}
 
-            <section className="space-y-3">
-              {plan.notes.map((note) => (
-                <div key={note.id} className="rounded-[2rem] bg-white/80 p-5 shadow-sm ring-1 ring-rose-100">
-                  <div className="mb-2 text-xs font-bold text-rose-500">{note.date}</div>
-                  <p className="text-sm leading-6 text-stone-700">{note.text}</p>
-                </div>
-              ))}
+        {tab === "practice" && (
+          <motion.main initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+            {["选择助词", "翻译成日语", "动词变形"].map((item) => (
+              <section key={item} className="rounded-[2rem] bg-white/80 p-6 shadow-sm ring-1 ring-rose-100">
+                <h2 className="text-lg font-bold text-stone-900">{item}</h2>
+                <p className="mt-2 text-sm text-stone-600">（结构预留）后续补充练习内容。</p>
+              </section>
+            ))}
+            <section className="rounded-[2rem] bg-white/80 p-6 shadow-sm ring-1 ring-rose-100">
+              <h2 className="text-lg font-bold text-stone-900">查看答案</h2>
+              <button onClick={() => setShowPracticeAnswer((v) => !v)} className="mt-3 rounded-full bg-rose-100 px-4 py-2 text-sm font-semibold text-rose-700">
+                {showPracticeAnswer ? "隐藏答案" : "显示答案"}
+              </button>
+              {showPracticeAnswer && <p className="mt-3 text-sm text-stone-600">（结构预留）答案区。</p>}
             </section>
           </motion.main>
         )}
+
+        {tab === "checkin" && (
+          <motion.main initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="rounded-[2rem] bg-white/80 p-6 shadow-sm ring-1 ring-rose-100">
+            <h2 className="text-xl font-bold text-stone-900">30天复习打卡</h2>
+            <div className="mt-4 grid grid-cols-5 gap-2 sm:grid-cols-6 md:grid-cols-10">
+              {plan.checkins.map((item) => (
+                <button key={item.day} onClick={() => toggleCheckin(item.day)} className={`rounded-xl px-2 py-3 text-xs font-bold ${item.done ? "bg-rose-500 text-white" : "bg-rose-100 text-rose-700"}`}>
+                  Day {item.day}
+                </button>
+              ))}
+            </div>
+          </motion.main>
+        )}
+        <div className="mt-6">
+          <button onClick={resetDemo} className="w-full rounded-2xl bg-stone-100 px-4 py-3 text-sm font-bold text-stone-600 hover:bg-stone-200">
+            重置演示数据
+          </button>
+        </div>
       </div>
     </div>
   );
