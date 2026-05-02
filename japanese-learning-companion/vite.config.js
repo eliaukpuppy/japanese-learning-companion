@@ -4,6 +4,6 @@ import react from '@vitejs/plugin-react'
 const isGitHubPages = process.env.GITHUB_PAGES === 'true'
 
 export default defineConfig({
-  base: isGitHubPages ? '/-/' : '/',
+  base: isGitHubPages ? '/japanese-learning-companion/' : '/',
   plugins: [react()],
 })
