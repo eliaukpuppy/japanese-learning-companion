@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { BookOpen, CalendarCheck, CheckCircle2, Heart, Sparkles, Target, Trophy, RotateCcw, ListChecks, PenSquare, Flame } from "lucide-react";
+import { BookOpen, CalendarCheck, CheckCircle2, Heart, Sparkles, Target, Trophy, RotateCcw, ChevronRight, Clock, Gamepad2, ListChecks, PenSquare, Flame } from "lucide-react";
 
 const STORAGE_KEY = "nihongo-companion-v1";
 
@@ -12,20 +12,108 @@ const initialPlan = {
     dailyTime: "每天30分钟",
     interestRule: "兴趣输入每周集中一次"
   },
+  currentStageId: "stage-1",
   stages: [
-    { id: "stage-1", units: [{ id: "u1", title: "复习第1–10课", done: false }] }
+    {
+      id: "stage-0",
+      name: "阶段0｜假名与学习系统",
+      duration: "2–4周",
+      goal: "学完你能熟练读写假名、会查词、会做每日复习。",
+      reason: "这是把学习机器装好，后面才不会每天都从头开始。",
+      units: [
+        { id: "u0-1", title: "平假名与片假名巩固", time: "5天", done: true },
+        { id: "u0-2", title: "长音、促音、拗音、拨音", time: "3天", done: true },
+        { id: "u0-3", title: "安装日语输入法和词典", time: "1天", done: false },
+        { id: "u0-4", title: "建立每日复习卡片", time: "2天", done: false }
+      ],
+      check: "随机读20个假名，并用日语输入法打出10个单词。",
+      stuck: "假名混淆时，不要重背整张表，只专练シ/ツ、ソ/ン、ぬ/め这类易混组。"
+    },
+    {
+      id: "stage-1",
+      name: "阶段1｜N5生活日语入门",
+      duration: "2–3个月",
+      goal: "学完你能自我介绍、描述物品位置、说喜欢和日常安排。",
+      reason: "先学能马上用的句子，最快获得“我真的会了”的感觉。",
+      units: [
+        { id: "u1-1", title: "复习第1–10课：です、は、も、これ/それ/あれ", time: "1周", done: false },
+        { id: "u1-2", title: "位置表达：ここ/そこ/あそこ、あります/います", time: "1周", done: false },
+        { id: "u1-3", title: "ます形：去哪里、做什么、几点做", time: "2周", done: false },
+        { id: "u1-4", title: "喜欢、想要、邀请：すき、ほしい、ませんか", time: "2周", done: false },
+        { id: "u1-5", title: "点餐、购物、问路场景", time: "2周", done: false }
+      ],
+      check: "录一段30秒日语自我介绍，并写5句今天做了什么。",
+      stuck: "语法术语看不懂时，先背可直接套用的句型：___がすきです、___へ行きます。"
+    },
+    {
+      id: "stage-2",
+      name: "阶段2｜N5到N4语法骨架",
+      duration: "5–7个月",
+      goal: "学完你能表达过去、请求、许可、能力、经验和简单原因。",
+      reason: "这阶段像给房子搭梁柱，て形、た形、ない形会决定后面读写听说是否顺。",
+      units: [
+        { id: "u2-1", title: "动词分类与て形", time: "4周", done: false },
+        { id: "u2-2", title: "た形、ない形、普通形", time: "4周", done: false },
+        { id: "u2-3", title: "请求与许可：てください、てもいいですか", time: "3周", done: false },
+        { id: "u2-4", title: "能力与经验：できます、たことがあります", time: "3周", done: false },
+        { id: "u2-5", title: "原因与连接：から、けど、そして", time: "3周", done: false }
+      ],
+      check: "写一篇100字小日记，主题是“昨天的一天”。",
+      stuck: "て形卡住时，把动词分成三盒：る动词、う动词、不规则动词，每天只练10个。"
+    },
+    {
+      id: "stage-3",
+      name: "阶段3｜N4到N3阅读听力桥梁",
+      duration: "7–9个月",
+      goal: "学完你能读简单短文、听懂慢速日常对话，并开始看懂简单漫画台词。",
+      reason: "这是从教材日语走向真实日语的桥。别追求全懂，先学会抓重点。",
+      units: [
+        { id: "u3-1", title: "N4语法复盘：と思う、という、なら", time: "4周", done: false },
+        { id: "u3-2", title: "复句连接：ので、のに、ながら、前に、後で", time: "4周", done: false },
+        { id: "u3-3", title: "阅读方法：找句尾、找主语、拆长句", time: "5周", done: false },
+        { id: "u3-4", title: "听力方法：精听、跟读、影子练习", time: "5周", done: false },
+        { id: "u3-5", title: "每周漫画/乙游/乙抓3句显微镜法", time: "持续", done: false }
+      ],
+      check: "读一篇简单分级读物或一页漫画，记录5个词、3个表达、1句感想。",
+      stuck: "看句子看晕时，先找句尾：ました、たいです、と思います、かもしれません。"
+    },
+    {
+      id: "stage-4",
+      name: "阶段4｜N3到N2核心能力",
+      duration: "10–14个月",
+      goal: "学完你能理解较长文章、日常播客大意和复杂剧情中的人物关系。",
+      reason: "N2不是背更多词，而是能处理转折、省略、语气和作者态度。",
+      units: [
+        { id: "u4-1", title: "N3核心语法：推量、传闻、条件", time: "8周", done: false },
+        { id: "u4-2", title: "被动、使役、使役被动", time: "5周", done: false },
+        { id: "u4-3", title: "N2语法：逆接、强调、限定、评价", time: "10周", done: false },
+        { id: "u4-4", title: "中级阅读：主题句、转折词、指示词", time: "8周", done: false },
+        { id: "u4-5", title: "中级听力：省略、语气、场景推断", time: "8周", done: false }
+      ],
+      check: "每周拆解一篇文章或一段剧情：5词、3语法、1句总结、30秒复述。",
+      stuck: "中级语法越学越像时，按功能分类：虽然、好像、只、正因为，而不是孤立背。"
+    },
+    {
+      id: "stage-5",
+      name: "阶段5｜N2冲刺与兴趣实战",
+      duration: "6–10个月",
+      goal: "学完你能系统备考N2，并稳定啃漫画、日乙和乙抓片段。",
+      reason: "考试给你明确终点，兴趣材料给你长期动力，两条线要一起走。",
+      units: [
+        { id: "u5-1", title: "N2词汇语法专项", time: "8周", done: false },
+        { id: "u5-2", title: "N2阅读专项：限时与错题复盘", time: "8周", done: false },
+        { id: "u5-3", title: "N2听力专项：场景、人物关系、态度", time: "8周", done: false },
+        { id: "u5-4", title: "漫画口语、省略、拟声词", time: "6周", done: false },
+        { id: "u5-5", title: "乙游/乙抓角色语气词库", time: "持续", done: false }
+      ],
+      check: "每月做一次N2分项测试，并完成一份错题复盘。",
+      stuck: "真实材料满屏不懂时，每天只处理3句话：猜意思、查关键词、找句尾、复述情绪。"
+    }
   ],
-  lessons: Array.from({ length: 25 }, (_, i) => ({
-    id: `lesson-${i + 1}`,
-    title: `第${i + 1}课`,
-    goal: "（待填写）本课目标",
-    patterns: "（待填写）核心句型",
-    keywords: "（待填写）关键词",
-    examples: "（待填写）例句",
-    practice: "（待填写）小练习",
+  checkins: Array.from({ length: 30 }, (_, i) => ({
+    day: i + 1,
     done: false
-  })),
-  checkins: Array.from({ length: 30 }, (_, i) => ({ day: i + 1, done: false }))
+  }))
 };
 
 function loadPlan() {
@@ -35,7 +123,6 @@ function loadPlan() {
     return {
       ...initialPlan,
       ...parsed,
-      lessons: parsed.lessons || initialPlan.lessons,
       checkins: parsed.checkins || initialPlan.checkins
     };
   } catch {
@@ -47,16 +134,23 @@ function savePlan(plan) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(plan));
 }
 
+function progressOfStage(stage) {
+  const total = stage.units.length;
+  const done = stage.units.filter((u) => u.done).length;
+  return total === 0 ? 0 : Math.round((done / total) * 100);
+}
+
 function allProgress(stages) {
   const units = stages.flatMap((s) => s.units);
   const done = units.filter((u) => u.done).length;
   return units.length === 0 ? 0 : Math.round((done / units.length) * 100);
 }
 
-function getTodayTasks() {
+function getTodayTasks(stage) {
+  const firstUndone = stage.units.find((u) => !u.done) || stage.units[0];
   return [
     { icon: RotateCcw, title: "5分钟复习", desc: "回看昨天的3个词/1个句型" },
-    { icon: BookOpen, title: "15分钟主线学习", desc: "继续推进当前课程" },
+    { icon: BookOpen, title: "15分钟主线学习", desc: firstUndone ? firstUndone.title : "复盘本阶段内容" },
     { icon: CalendarCheck, title: "5分钟输出", desc: "写1句日语或录10秒跟读" },
     { icon: Heart, title: "5分钟奖励", desc: "看一句漫画/乙游/乙抓台词，不要求全懂" }
   ];
@@ -69,25 +163,46 @@ export default function JapaneseLearningCompanion() {
 
   useEffect(() => savePlan(plan), [plan]);
 
+  const currentStage = useMemo(
+    () => plan.stages.find((s) => s.id === plan.currentStageId) || plan.stages[0],
+    [plan]
+  );
+
   const totalProgress = allProgress(plan.stages);
-  const todayTasks = useMemo(() => getTodayTasks(), []);
+  const todayTasks = getTodayTasks(currentStage);
+
+  function toggleUnit(stageId, unitId) {
+    setPlan((prev) => ({
+      ...prev,
+      stages: prev.stages.map((stage) =>
+        stage.id !== stageId
+          ? stage
+          : {
+              ...stage,
+              units: stage.units.map((unit) =>
+                unit.id === unitId ? { ...unit, done: !unit.done } : unit
+              )
+            }
+      )
+    }));
+  }
+
+  function setCurrentStage(stageId) {
+    setPlan((prev) => ({ ...prev, currentStageId: stageId }));
+    setTab("today");
+  }
 
   function resetDemo() {
     localStorage.removeItem(STORAGE_KEY);
     setPlan(initialPlan);
   }
 
-  function toggleLesson(lessonId) {
-    setPlan((prev) => ({
-      ...prev,
-      lessons: prev.lessons.map((lesson) => (lesson.id === lessonId ? { ...lesson, done: !lesson.done } : lesson))
-    }));
-  }
-
   function toggleCheckin(day) {
     setPlan((prev) => ({
       ...prev,
-      checkins: prev.checkins.map((item) => (item.day === day ? { ...item, done: !item.done } : item))
+      checkins: prev.checkins.map((item) =>
+        item.day === day ? { ...item, done: !item.done } : item
+      )
     }));
   }
 
@@ -100,11 +215,22 @@ export default function JapaneseLearningCompanion() {
               <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-rose-100 px-3 py-1 text-sm font-medium text-rose-700">
                 <Sparkles size={16} /> 30分钟也能慢慢学会日语
               </div>
-              <h1 className="text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">{plan.profile.title}</h1>
+              <h1 className="text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
+                {plan.profile.title}
+              </h1>
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600 sm:text-base">
+                当前基础：{plan.profile.level}。目标：{plan.profile.goal}。
+              </p>
             </div>
             <div className="rounded-3xl bg-gradient-to-br from-rose-100 to-violet-100 p-5 text-center shadow-inner">
               <div className="text-sm text-stone-600">总进度</div>
               <div className="mt-1 text-4xl font-black text-rose-600">{totalProgress}%</div>
+              <div className="mt-2 h-2 w-48 rounded-full bg-white/70">
+                <div
+                  className="h-2 rounded-full bg-rose-400 transition-all"
+                  style={{ width: `${totalProgress}%` }}
+                />
+              </div>
             </div>
           </div>
         </header>
@@ -112,16 +238,20 @@ export default function JapaneseLearningCompanion() {
         <nav className="mb-6 grid grid-cols-3 gap-2 rounded-3xl bg-white/70 p-2 shadow-sm ring-1 ring-rose-100 backdrop-blur sm:grid-cols-6">
           {[
             ["today", "今日", CalendarCheck],
-            ["course", "课程", Target],
+            ["route", "路线", Target],
             ["quick", "速查", ListChecks],
             ["practice", "练习", PenSquare],
             ["checkin", "打卡", Flame],
-            ["resources", "资源", BookOpen]
+            ["resources", "资源", BookOpen],
           ].map(([key, label, Icon]) => (
             <button
               key={key}
               onClick={() => setTab(key)}
-              className={`flex items-center justify-center gap-2 rounded-2xl px-3 py-3 text-sm font-semibold transition ${tab === key ? "bg-rose-500 text-white shadow-sm" : "text-stone-600 hover:bg-rose-50"}`}
+              className={`flex items-center justify-center gap-2 rounded-2xl px-3 py-3 text-sm font-semibold transition ${
+                tab === key
+                  ? "bg-rose-500 text-white shadow-sm"
+                  : "text-stone-600 hover:bg-rose-50"
+              }`}
             >
               <Icon size={17} />
               {label}
@@ -129,19 +259,268 @@ export default function JapaneseLearningCompanion() {
           ))}
         </nav>
 
-        {tab === "today" && <motion.main initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="grid gap-4 md:grid-cols-2">{todayTasks.map((task) => <section key={task.title} className="rounded-[2rem] bg-white/80 p-5 shadow-sm ring-1 ring-rose-100"><div className="flex items-center gap-2 font-bold"><task.icon size={18} />{task.title}</div><p className="mt-2 text-sm text-stone-600">{task.desc}</p></section>)}</motion.main>}
+        {tab === "today" && (
+          <motion.main initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="grid gap-6 lg:grid-cols-[1.2fr_.8fr]">
+            <section className="rounded-[2rem] bg-white/80 p-6 shadow-sm ring-1 ring-rose-100">
+              <div className="mb-5 flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-sm font-medium text-rose-600">当前阶段</p>
+                  <h2 className="mt-1 text-2xl font-bold text-stone-900">{currentStage.name}</h2>
+                  <p className="mt-2 text-sm leading-6 text-stone-600">{currentStage.reason}</p>
+                </div>
+                <span className="rounded-full bg-violet-100 px-3 py-1 text-sm font-semibold text-violet-700">
+                  {progressOfStage(currentStage)}%
+                </span>
+              </div>
 
-        {tab === "course" && <motion.main initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">{plan.lessons.map((lesson) => <section key={lesson.id} className="rounded-[2rem] bg-white/80 p-6 shadow-sm ring-1 ring-rose-100"><div className="mb-3 flex items-center justify-between"><h2 className="text-xl font-bold text-stone-900">{lesson.title}</h2><button onClick={() => toggleLesson(lesson.id)} className={`rounded-full px-3 py-1 text-xs font-bold ${lesson.done ? "bg-green-100 text-green-700" : "bg-rose-100 text-rose-700"}`}>{lesson.done ? "已完成" : "未完成"}</button></div><div className="grid gap-3 text-sm md:grid-cols-2"><div className="rounded-2xl bg-rose-50 p-3"><strong>本课目标：</strong>{lesson.goal}</div><div className="rounded-2xl bg-rose-50 p-3"><strong>核心句型：</strong>{lesson.patterns}</div><div className="rounded-2xl bg-rose-50 p-3"><strong>关键词：</strong>{lesson.keywords}</div><div className="rounded-2xl bg-rose-50 p-3"><strong>例句：</strong>{lesson.examples}</div><div className="rounded-2xl bg-violet-50 p-3 md:col-span-2"><strong>小练习：</strong>{lesson.practice}</div></div></section>)}</motion.main>}
+              <div className="mb-6 rounded-3xl bg-rose-50 p-4">
+                <div className="flex items-start gap-3">
+                  <Trophy className="mt-0.5 text-rose-500" size={20} />
+                  <div>
+                    <div className="font-bold text-stone-900">阶段目标</div>
+                    <p className="mt-1 text-sm leading-6 text-stone-700">{currentStage.goal}</p>
+                  </div>
+                </div>
+              </div>
 
-        {tab === "quick" && <motion.main initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="grid gap-4 md:grid-cols-2">{["助词总整理", "动词形式总整理", "形容词与名词句整理", "易混点速查"].map((item) => <section key={item} className="rounded-[2rem] bg-white/80 p-6 shadow-sm ring-1 ring-rose-100"><h2 className="text-lg font-bold text-stone-900">{item}</h2><p className="mt-2 text-sm text-stone-600">（结构预留）</p></section>)}</motion.main>}
+              <h3 className="mb-3 text-lg font-bold">今天只做这4件小事</h3>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {todayTasks.map((task, index) => {
+                  const Icon = task.icon;
+                  return (
+                    <div key={task.title} className="rounded-3xl border border-rose-100 bg-white p-4 shadow-sm">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-100 text-rose-600">
+                          <Icon size={19} />
+                        </div>
+                        <div>
+                          <div className="text-xs font-bold text-rose-500">STEP {index + 1}</div>
+                          <div className="font-bold text-stone-900">{task.title}</div>
+                        </div>
+                      </div>
+                      <p className="mt-3 text-sm leading-6 text-stone-600">{task.desc}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
 
-        {tab === "practice" && <motion.main initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">{["选择助词", "翻译成日语", "动词变形"].map((item) => <section key={item} className="rounded-[2rem] bg-white/80 p-6 shadow-sm ring-1 ring-rose-100"><h2 className="text-lg font-bold text-stone-900">{item}</h2><p className="mt-2 text-sm text-stone-600">（结构预留）</p></section>)}<section className="rounded-[2rem] bg-white/80 p-6 shadow-sm ring-1 ring-rose-100"><h2 className="text-lg font-bold text-stone-900">查看答案</h2><button onClick={() => setShowPracticeAnswer((v) => !v)} className="mt-3 rounded-full bg-rose-100 px-4 py-2 text-sm font-semibold text-rose-700">{showPracticeAnswer ? "隐藏答案" : "显示答案"}</button>{showPracticeAnswer && <p className="mt-3 text-sm text-stone-600">（结构预留）</p>}</section></motion.main>}
+            <aside className="space-y-6">
+              <div className="rounded-[2rem] bg-white/80 p-6 shadow-sm ring-1 ring-rose-100">
+                <h3 className="mb-4 flex items-center gap-2 text-lg font-bold">
+                  <Clock size={19} className="text-rose-500" /> 30分钟学习节奏
+                </h3>
+                <div className="space-y-3 text-sm">
+                  {[
+                    ["5分钟", "复习昨天的词和句型"],
+                    ["15分钟", "学习一个小语法/教材片段"],
+                    ["5分钟", "听一句、跟读一句"],
+                    ["5分钟", "写一句输出或记录笔记"]
+                  ].map(([time, text]) => (
+                    <div key={time} className="flex gap-3 rounded-2xl bg-stone-50 p-3">
+                      <span className="font-bold text-rose-600">{time}</span>
+                      <span className="text-stone-700">{text}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
 
-        {tab === "checkin" && <motion.main initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="rounded-[2rem] bg-white/80 p-6 shadow-sm ring-1 ring-rose-100"><h2 className="text-xl font-bold text-stone-900">30天复习打卡</h2><div className="mt-4 grid grid-cols-5 gap-2 sm:grid-cols-6 md:grid-cols-10">{plan.checkins.map((item) => <button key={item.day} onClick={() => toggleCheckin(item.day)} className={`rounded-xl px-2 py-3 text-xs font-bold ${item.done ? "bg-rose-500 text-white" : "bg-rose-100 text-rose-700"}`}>Day {item.day}</button>)}</div></motion.main>}
+              <div className="rounded-[2rem] bg-gradient-to-br from-violet-100 to-rose-100 p-6 shadow-sm">
+                <h3 className="flex items-center gap-2 text-lg font-bold text-stone-900">
+                  <Gamepad2 size={20} className="text-violet-600" /> 每周兴趣输入
+                </h3>
+                <p className="mt-3 text-sm leading-6 text-stone-700">
+                  每周集中一次，选漫画/乙游/乙抓中的3句话，用“猜意思 → 查关键词 → 找句尾 → 复述情绪”的显微镜法处理。
+                </p>
+              </div>
+            </aside>
+          </motion.main>
+        )}
 
-        {tab === "resources" && <motion.main initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="rounded-[2rem] bg-white/80 p-6 shadow-sm ring-1 ring-rose-100"><h2 className="text-lg font-bold">短文阅读 / 多读（后续继续填充）</h2></motion.main>}
+        {tab === "route" && (
+          <motion.main initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
+            {plan.stages.map((stage) => {
+              const progress = progressOfStage(stage);
+              const isCurrent = stage.id === plan.currentStageId;
+              return (
+                <section key={stage.id} className={`rounded-[2rem] bg-white/80 p-5 shadow-sm ring-1 ${isCurrent ? "ring-rose-300" : "ring-rose-100"}`}>
+                  <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                    <div>
+                      <div className="mb-2 flex flex-wrap items-center gap-2">
+                        <h2 className="text-xl font-bold text-stone-900">{stage.name}</h2>
+                        {isCurrent && <span className="rounded-full bg-rose-500 px-3 py-1 text-xs font-bold text-white">进行中</span>}
+                        <span className="rounded-full bg-stone-100 px-3 py-1 text-xs font-medium text-stone-600">{stage.duration}</span>
+                      </div>
+                      <p className="max-w-3xl text-sm leading-6 text-stone-600">{stage.goal}</p>
+                    </div>
+                    <button
+                      onClick={() => setCurrentStage(stage.id)}
+                      className="inline-flex items-center justify-center gap-2 rounded-2xl bg-stone-900 px-4 py-2 text-sm font-bold text-white hover:bg-stone-700"
+                    >
+                      设为当前阶段 <ChevronRight size={16} />
+                    </button>
+                  </div>
 
-        <div className="mt-6"><button onClick={resetDemo} className="w-full rounded-2xl bg-stone-100 px-4 py-3 text-sm font-bold text-stone-600 hover:bg-stone-200">重置演示数据</button></div>
+                  <div className="mt-4 h-2 rounded-full bg-rose-50">
+                    <div className="h-2 rounded-full bg-rose-400 transition-all" style={{ width: `${progress}%` }} />
+                  </div>
+
+                  <div className="mt-5 grid gap-3 lg:grid-cols-2">
+                    {stage.units.map((unit) => (
+                      <button
+                        key={unit.id}
+                        onClick={() => toggleUnit(stage.id, unit.id)}
+                        className={`flex items-center gap-3 rounded-3xl border p-4 text-left transition ${
+                          unit.done
+                            ? "border-emerald-100 bg-emerald-50"
+                            : "border-rose-100 bg-white hover:bg-rose-50"
+                        }`}
+                      >
+                        <CheckCircle2 className={unit.done ? "text-emerald-500" : "text-stone-300"} size={22} />
+                        <div className="flex-1">
+                          <div className="font-semibold text-stone-900">{unit.title}</div>
+                          <div className="mt-1 text-xs text-stone-500">预计：{unit.time}</div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="mt-5 grid gap-3 md:grid-cols-2">
+                    <div className="rounded-3xl bg-rose-50 p-4">
+                      <div className="font-bold text-rose-700">阶段检测</div>
+                      <p className="mt-1 text-sm leading-6 text-stone-700">{stage.check}</p>
+                    </div>
+                    <div className="rounded-3xl bg-violet-50 p-4">
+                      <div className="font-bold text-violet-700">卡住怎么办</div>
+                      <p className="mt-1 text-sm leading-6 text-stone-700">{stage.stuck}</p>
+                    </div>
+                  </div>
+                </section>
+              );
+            })}
+          </motion.main>
+        )}
+
+        {tab === "resources" && (
+          <motion.main initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+            {[
+              {
+                title: "主线教材",
+                name: "《大家的日语》或 IRODORI",
+                desc: "每天用它推进主线，不要同时开太多教材。",
+                links: [
+                  { label: "IRODORI", href: "https://www.irodori.jpf.go.jp/" },
+                  { label: "Marugoto", href: "https://marugoto.jpf.go.jp/" }
+                ]
+              },
+              {
+                title: "语法查漏",
+                name: "Tae Kim / Bunpro / 语法书",
+                desc: "遇到看不懂的语法再查，不要把查资料变成主线。",
+                links: [
+                  { label: "Tae Kim", href: "https://guidetojapanese.org/learn/" },
+                  { label: "JLPT 样题", href: "https://www.jlpt.jp/e/samples/sampleindex.html" }
+                ]
+              },
+              {
+                title: "假名与汉字",
+                name: "假名测验 + 汉字卡片",
+                desc: "每天少量复习，比周末狂背更稳。",
+                links: [{ label: "Kana Quiz", href: "https://kana-quiz.tofugu.com/" }]
+              },
+              {
+                title: "听力跟读",
+                name: "教材音频 / 慢速日语",
+                desc: "目标不是一次听懂，而是让耳朵熟悉句尾和节奏。",
+                links: [{ label: "NHK Easy Japanese", href: "https://www.nhk.or.jp/lesson/" }]
+              },
+              {
+                title: "阅读过渡",
+                name: "分级读物 / 简单漫画",
+                desc: "从带图、短句、重复率高的材料开始。",
+                links: [{ label: "Tadoku Free Books", href: "https://tadoku.org/japanese/en/free-books-en/" }]
+              },
+              {
+                title: "兴趣输入",
+                name: "漫画、日乙、乙抓",
+                desc: "每周集中一次，只精读/精听3句话就算完成。",
+                links: [
+                  { label: "NHK Easy", href: "https://www.nhk.or.jp/lesson/" },
+                  { label: "Marugoto", href: "https://marugoto.jpf.go.jp/" }
+                ]
+              }
+            ].map((resource) => (
+              <div key={resource.title} className="rounded-[2rem] bg-white/80 p-6 shadow-sm ring-1 ring-rose-100">
+                <div className="mb-3 inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-rose-100 text-rose-600">
+                  <BookOpen size={21} />
+                </div>
+                <h2 className="text-lg font-bold text-stone-900">{resource.title}</h2>
+                <p className="mt-1 font-semibold text-rose-600">{resource.name}</p>
+                <p className="mt-3 text-sm leading-6 text-stone-600">{resource.desc}</p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {resource.links.map((link) => (
+                    <a
+                      key={link.href}
+                      href={link.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="rounded-full bg-rose-100 px-3 py-1.5 text-xs font-semibold text-rose-700 transition hover:bg-rose-200"
+                    >
+                      {link.label}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </motion.main>
+        )}
+
+        {tab === "quick" && (
+          <motion.main initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="grid gap-5 md:grid-cols-2">
+            {["助词总整理", "动词形式总整理", "形容词与名词句整理", "易混点速查"].map((item) => (
+              <section key={item} className="rounded-[2rem] bg-white/80 p-6 shadow-sm ring-1 ring-rose-100">
+                <h2 className="text-lg font-bold text-stone-900">{item}</h2>
+                <p className="mt-2 text-sm text-stone-600">（结构预留）后续补充可检索内容。</p>
+              </section>
+            ))}
+          </motion.main>
+        )}
+
+        {tab === "practice" && (
+          <motion.main initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+            {["选择助词", "翻译成日语", "动词变形"].map((item) => (
+              <section key={item} className="rounded-[2rem] bg-white/80 p-6 shadow-sm ring-1 ring-rose-100">
+                <h2 className="text-lg font-bold text-stone-900">{item}</h2>
+                <p className="mt-2 text-sm text-stone-600">（结构预留）后续补充练习内容。</p>
+              </section>
+            ))}
+            <section className="rounded-[2rem] bg-white/80 p-6 shadow-sm ring-1 ring-rose-100">
+              <h2 className="text-lg font-bold text-stone-900">查看答案</h2>
+              <button onClick={() => setShowPracticeAnswer((v) => !v)} className="mt-3 rounded-full bg-rose-100 px-4 py-2 text-sm font-semibold text-rose-700">
+                {showPracticeAnswer ? "隐藏答案" : "显示答案"}
+              </button>
+              {showPracticeAnswer && <p className="mt-3 text-sm text-stone-600">（结构预留）答案区。</p>}
+            </section>
+          </motion.main>
+        )}
+
+        {tab === "checkin" && (
+          <motion.main initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="rounded-[2rem] bg-white/80 p-6 shadow-sm ring-1 ring-rose-100">
+            <h2 className="text-xl font-bold text-stone-900">30天复习打卡</h2>
+            <div className="mt-4 grid grid-cols-5 gap-2 sm:grid-cols-6 md:grid-cols-10">
+              {plan.checkins.map((item) => (
+                <button key={item.day} onClick={() => toggleCheckin(item.day)} className={`rounded-xl px-2 py-3 text-xs font-bold ${item.done ? "bg-rose-500 text-white" : "bg-rose-100 text-rose-700"}`}>
+                  Day {item.day}
+                </button>
+              ))}
+            </div>
+          </motion.main>
+        )}
+        <div className="mt-6">
+          <button onClick={resetDemo} className="w-full rounded-2xl bg-stone-100 px-4 py-3 text-sm font-bold text-stone-600 hover:bg-stone-200">
+            重置演示数据
+          </button>
+        </div>
       </div>
     </div>
   );
