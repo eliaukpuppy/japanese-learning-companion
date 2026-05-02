@@ -5,6 +5,7 @@ import { minnaUpperLessons } from "./data/minnaUpperLessons";
 import { quickReference } from "./data/quickReference";
 import { practiceQuestions } from "./data/practiceQuestions";
 import { checkinPlan } from "./data/checkinPlan";
+import { resources } from "./data/resources";
 
 const STORAGE_KEY = "nihongo-companion-v1";
 
@@ -52,31 +53,6 @@ const allProgress = (stages) => {
   return Math.round((units.filter((u) => u.done).length / units.length) * 100);
 };
 
-const resourceCategories = [
-  {
-    title: "词典 / 语法",
-    links: [
-      { label: "Weblio 国语辞典", href: "https://www.weblio.jp/" },
-      { label: "Jisho 英日词典", href: "https://jisho.org/" },
-      { label: "Imabi 语法", href: "https://imabi.org/" }
-    ]
-  },
-  {
-    title: "听力 / 播客",
-    links: [
-      { label: "Nihongo con Teppei", href: "https://www.youtube.com/@nihongoconteppei" },
-      { label: "Comprehensible Japanese", href: "https://www.youtube.com/@ComprehensibleJapanese" }
-    ]
-  },
-  {
-    title: "短文阅读 / 多读",
-    links: [
-      { label: "NHK News Web Easy", href: "https://www3.nhk.or.jp/news/easy/" },
-      { label: "青空文库", href: "https://www.aozora.gr.jp/" },
-      { label: "小説家になろう", href: "https://syosetu.com/" }
-    ]
-  }
-];
 
 export default function JapaneseLearningCompanion() {
   const [plan, setPlan] = useState(loadPlan);
@@ -134,9 +110,10 @@ export default function JapaneseLearningCompanion() {
     {tab === "checkin" && <motion.main className="space-y-3">{checkinPlan.items.map((item)=>{const state=plan.checkins.find((c)=>c.day===item.day)||{done:false,sentence:"",mistakes:""}; return <section key={item.day} className="rounded-[1.5rem] bg-white/80 p-4 shadow-sm ring-1 ring-rose-100"><div className="flex items-center justify-between"><h3 className="font-bold">Day {item.day}</h3><button onClick={()=>toggleCheckin(item.day)} className={`rounded-full px-3 py-1 text-xs ${state.done?"bg-rose-500 text-white":"bg-rose-100 text-rose-700"}`}>{state.done?"已完成":"完成"}</button></div><p className="text-sm mt-1">复习课次：{item.focus}</p><p className="text-sm">今日重点：{item.focus}</p><input value={state.sentence} onChange={(e)=>updateCheckinField(item.day,"sentence",e.target.value)} placeholder="造句" className="mt-2 w-full rounded-xl border border-rose-100 px-3 py-2 text-sm"/><input value={state.mistakes} onChange={(e)=>updateCheckinField(item.day,"mistakes",e.target.value)} placeholder="错题" className="mt-2 w-full rounded-xl border border-rose-100 px-3 py-2 text-sm"/></section>;})}</motion.main>}
 
     {tab === "resources" && <motion.main className="grid gap-5 md:grid-cols-2">
-      {resourceCategories.map((category) => (
+      {resources.map((category) => (
         <section key={category.title} className="rounded-[2rem] bg-white/80 p-6 shadow-sm ring-1 ring-rose-100">
           <h2 className="text-lg font-bold">{category.title}</h2>
+          <p className="mt-2 text-sm text-stone-600">{category.description}</p>
           <div className="mt-3 flex flex-wrap gap-2">
             {category.links.map((link) => (
               <a key={link.href} href={link.href} target="_blank" rel="noreferrer" className="rounded-full bg-rose-100 px-3 py-1 text-sm text-rose-700 hover:bg-rose-200">
