@@ -90,6 +90,7 @@ export default function JapaneseLearningCompanion() {
   const [plan, setPlan] = useState(loadPlan);
   const [tab, setTab] = useState("today");
   const [answersVisible, setAnswersVisible] = useState({});
+  const [expandedLesson, setExpandedLesson] = useState(null);
   const importInputRef = useRef(null);
 
   useEffect(() => savePlan(plan), [plan]);
@@ -134,7 +135,79 @@ export default function JapaneseLearningCompanion() {
         <section className={cardClass}><h2 className="flex items-center gap-2 text-xl font-bold"><Sparkles size={18} className="text-rose-500" />阶段目标</h2><p className="mt-2 text-sm">{currentStage.goal}</p></section>
       </motion.main>}
 
-      {tab === "route" && <motion.main key="route" className="space-y-4" {...tabTransition}>{minnaUpperLessons.slice(0,25).map((lesson)=><section key={lesson.lessonNumber} className={cardClass}><div className="flex justify-between gap-2"><h2 className="text-xl font-bold">第{lesson.lessonNumber}课｜{lesson.title}</h2><motion.button whileTap={{ scale: 1.05 }} onClick={()=>toggleLessonCheck(lesson.lessonNumber)} className={`rounded-full px-3 py-1 text-sm font-semibold ${plan.lessonChecks[lesson.lessonNumber]?"bg-emerald-100 text-emerald-700":"bg-rose-100 text-rose-700"}`}>{plan.lessonChecks[lesson.lessonNumber]?"已完成":"标记完成"}</motion.button></div><p className="mt-3 text-sm text-stone-700"><span className="font-semibold">本课目标：</span>{lesson.goal}</p><div className="mt-3"><h3 className="text-sm font-semibold text-stone-800">核心句型 / 语法</h3><ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-stone-700">{lesson.grammarPoints.map((point, idx)=><li key={`${lesson.lessonNumber}-grammar-${idx}`}>{point}</li>)}</ul></div><div className="mt-3"><h3 className="text-sm font-semibold text-stone-800">关键词 / 助词 / 形式</h3><div className="mt-2 flex flex-wrap gap-2">{lesson.keywords.map((keyword, idx)=><span key={`${lesson.lessonNumber}-keyword-${idx}`} className="rounded-full bg-rose-100 px-3 py-1 text-xs text-rose-700">{keyword}</span>)}</div></div><div className="mt-3"><h3 className="text-sm font-semibold text-stone-800">例句</h3><ul className="mt-2 space-y-2 text-sm text-stone-700">{lesson.examples.map((example, idx)=><li key={`${lesson.lessonNumber}-example-${idx}`}><p>{example.jp}</p><p className="text-stone-500">{example.cn}</p></li>)}</ul></div><div className="mt-3"><h3 className="text-sm font-semibold text-stone-800">小练习</h3><ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-stone-700">{lesson.miniPractice.map((practice, idx)=><li key={`${lesson.lessonNumber}-practice-${idx}`}>{practice.prompt}</li>)}</ul></div></section>)}</motion.main>}
+      {tab === "route" && <motion.main key="route" className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3" {...tabTransition}>
+        {minnaUpperLessons.slice(0, 25).map((lesson) => {
+          const isExpanded = expandedLesson === lesson.lessonNumber;
+          const isDone = !!plan.lessonChecks[lesson.lessonNumber];
+          return (
+            <section key={lesson.lessonNumber} className="rounded-[2rem] border border-rose-100 bg-gradient-to-br from-rose-50 via-orange-50 to-violet-50 p-5 shadow-[0_12px_30px_rgba(251,113,133,0.12)] transition duration-200 hover:-translate-y-1 hover:shadow-[0_18px_36px_rgba(216,180,254,0.22)]">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-rose-500">第{lesson.lessonNumber}课</p>
+                  <h2 className="mt-1 text-lg font-bold text-stone-800">{lesson.title}</h2>
+                </div>
+                {isDone && <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">已完成</span>}
+              </div>
+              <p className="mt-3 rounded-2xl bg-white/70 p-3 text-sm text-stone-700">{lesson.goal}</p>
+              <div className="mt-3 flex items-center justify-between gap-2">
+                <span className={`rounded-full px-3 py-1 text-xs font-semibold ${isDone ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"}`}>{isDone ? "完成状态：已完成" : "完成状态：进行中"}</span>
+                <motion.button
+                  whileTap={{ scale: 0.96 }}
+                  onClick={() => setExpandedLesson(isExpanded ? null : lesson.lessonNumber)}
+                  className="rounded-full bg-violet-100 px-3 py-1 text-xs font-semibold text-violet-700 hover:bg-violet-200"
+                >
+                  {isExpanded ? "收起详情" : "查看详情"}
+                </motion.button>
+              </div>
+
+              <AnimatePresence initial={false}>
+                {isExpanded && (
+                  <motion.div
+                    key={`detail-${lesson.lessonNumber}`}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -6 }}
+                    transition={{ duration: 0.2 }}
+                    className="mt-4 space-y-3 rounded-3xl bg-white/80 p-4 ring-1 ring-rose-100"
+                  >
+                    <div>
+                      <h3 className="text-sm font-semibold text-stone-800">本课目标</h3>
+                      <p className="mt-1 text-sm text-stone-700">{lesson.goal}</p>
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-semibold text-stone-800">文法</h3>
+                      <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-stone-700">
+                        {lesson.grammarPoints.map((point, idx) => <li key={`${lesson.lessonNumber}-grammar-${idx}`}>{point}</li>)}
+                      </ul>
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-semibold text-stone-800">重点词</h3>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {lesson.keywords.map((keyword, idx) => <span key={`${lesson.lessonNumber}-keyword-${idx}`} className="rounded-full bg-rose-100 px-3 py-1 text-xs text-rose-700">{keyword}</span>)}
+                      </div>
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-semibold text-stone-800">例句</h3>
+                      <ul className="mt-1 space-y-2 text-sm text-stone-700">
+                        {lesson.examples.map((example, idx) => <li key={`${lesson.lessonNumber}-example-${idx}`}><p>{example.jp}</p><p className="text-stone-500">{example.cn}</p></li>)}
+                      </ul>
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-semibold text-stone-800">小练习</h3>
+                      <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-stone-700">
+                        {lesson.miniPractice.map((practice, idx) => <li key={`${lesson.lessonNumber}-practice-${idx}`}>{practice.prompt}</li>)}
+                      </ul>
+                    </div>
+                    <div className="pt-1">
+                      <motion.button whileTap={{ scale: 1.05 }} onClick={() => toggleLessonCheck(lesson.lessonNumber)} className={`rounded-full px-3 py-1 text-sm font-semibold ${isDone ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"}`}>{isDone ? "已完成" : "标记完成"}</motion.button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </section>
+          );
+        })}
+      </motion.main>}
 
       {tab === "quick" && <motion.main key="quick" className="grid gap-5 md:grid-cols-2" {...tabTransition}>{[quickReference.particles,quickReference.verbForms,quickReference.adjectiveNoun,quickReference.confusionPairs].map((sec)=><section key={sec.title} className={cardClass}><h2 className="flex items-center gap-2 text-lg font-bold"><BookOpen size={16} className="text-rose-500" />{sec.title}</h2><ul className="mt-2 space-y-2 text-sm">{sec.items.map((item,idx)=><li key={idx}>{typeof item==="string"?item:item.particle?`${item.particle}：${item.usage}（${item.example}）`:`${item.pair}：${item.tip}`}</li>)}</ul></section>)}</motion.main>}
 
