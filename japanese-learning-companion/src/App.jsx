@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { BookOpen, CalendarCheck, Target, ListChecks, PenSquare, Flame, Settings, Download, Upload, Sparkles, Heart, Award, Flower2, Inbox } from "lucide-react";
+import { BookOpen, CalendarCheck, Target, ListChecks, PenSquare, Flame, Settings, Download, Upload, Sparkles, Heart, Award, Flower2, Inbox, Tags, GitCompareArrows, Languages, ArrowRight } from "lucide-react";
 import { minnaUpperLessons } from "./data/minnaUpperLessons";
 import { quickReference } from "./data/quickReference";
 import { practiceQuestions } from "./data/practiceQuestions";
@@ -305,7 +305,70 @@ export default function JapaneseLearningCompanion() {
         </section>
       </motion.main>}
 
-      {tab === "quick" && <motion.main key="quick" className="grid gap-5 md:grid-cols-2" {...tabTransition}>{[quickReference.particles,quickReference.verbForms,quickReference.adjectiveNoun,quickReference.confusionPairs].map((sec)=><section key={sec.title} className={cardClass}><h2 className="flex items-center gap-2 text-lg font-bold"><BookOpen size={16} className="text-rose-500" />{sec.title}</h2><ul className="mt-2 space-y-2 text-sm">{sec.items.map((item,idx)=><li key={idx}>{typeof item==="string"?item:item.particle?`${item.particle}：${item.usage}（${item.example}）`:`${item.pair}：${item.tip}`}</li>)}</ul></section>)}</motion.main>}
+      {tab === "quick" && <motion.main key="quick" className="space-y-5" {...tabTransition}>
+        <section className="rounded-[2rem] border border-rose-100 bg-white/80 p-4 shadow-[0_12px_30px_rgba(251,113,133,0.12)]">
+          <h2 className="flex items-center gap-2 text-lg font-bold text-stone-800"><BookOpen size={16} className="text-rose-500" />速查分类</h2>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {[["particles", "助词"], ["verb-forms", "动词形式"], ["adj-noun", "形容词/名词句"], ["confusions", "易混点"]].map(([id, label]) => (
+              <a key={id} href={`#${id}`} className="rounded-full bg-gradient-to-r from-rose-100 to-violet-100 px-4 py-2 text-sm font-semibold text-stone-700 shadow-sm transition hover:from-rose-200 hover:to-violet-200">{label}</a>
+            ))}
+          </div>
+        </section>
+
+        <section id="particles" className={cardClass}>
+          <h2 className="flex items-center gap-2 text-xl font-bold"><Tags size={18} className="text-rose-500" />{quickReference.particles.title}</h2>
+          <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {quickReference.particles.items.map((item) => (
+              <article key={item.particle} className="rounded-[2rem] border border-rose-100 bg-gradient-to-br from-rose-50 via-orange-50 to-violet-50 p-4 shadow-[0_8px_18px_rgba(244,114,182,0.12)]">
+                <span className="inline-flex rounded-full bg-white px-3 py-1 text-sm font-bold text-rose-600 ring-1 ring-rose-100">{item.particle}</span>
+                <p className="mt-3 text-sm font-semibold text-stone-700">{item.usage}</p>
+                <p className="mt-2 rounded-2xl bg-white/80 p-3 text-sm text-stone-700">{item.example}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section id="verb-forms" className={cardClass}>
+          <h2 className="flex items-center gap-2 text-xl font-bold"><ArrowRight size={18} className="text-violet-500" />{quickReference.verbForms.title}</h2>
+          <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
+            {quickReference.verbForms.items.map((item) => (
+              <article key={item.form} className="rounded-[2rem] border border-violet-100 bg-gradient-to-br from-violet-50 via-rose-50 to-amber-50 p-4 shadow-[0_8px_18px_rgba(196,181,253,0.2)]">
+                <span className="inline-flex rounded-full bg-white px-3 py-1 text-sm font-bold text-violet-700 ring-1 ring-violet-100">{item.form}</span>
+                <p className="mt-3 text-sm text-stone-700">{item.usage}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section id="adj-noun" className={cardClass}>
+          <h2 className="flex items-center gap-2 text-xl font-bold"><Languages size={18} className="text-rose-500" />{quickReference.adjectiveNoun.title}</h2>
+          <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-3">
+            {quickReference.adjectiveNoun.items.map((item) => (
+              <article key={item.category} className="rounded-[2rem] border border-rose-100 bg-gradient-to-br from-rose-50 via-orange-50 to-violet-50 p-4 shadow-[0_8px_18px_rgba(244,114,182,0.12)]">
+                <h3 className="text-sm font-bold text-stone-800">{item.category}</h3>
+                <ul className="mt-3 space-y-2 text-sm text-stone-700">
+                  <li><span className="font-semibold text-rose-600">肯定：</span>{item.positive}</li>
+                  <li><span className="font-semibold text-rose-600">否定：</span>{item.negative}</li>
+                  <li><span className="font-semibold text-rose-600">过去：</span>{item.past}</li>
+                </ul>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section id="confusions" className={cardClass}>
+          <h2 className="flex items-center gap-2 text-xl font-bold"><GitCompareArrows size={18} className="text-violet-500" />{quickReference.confusionPairs.title}</h2>
+          <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
+            {quickReference.confusionPairs.items.map((item) => (
+              <article key={item.pair} className="rounded-[2rem] border border-violet-100 bg-gradient-to-br from-violet-50 via-rose-50 to-amber-50 p-4 shadow-[0_8px_18px_rgba(196,181,253,0.2)]">
+                <h3 className="text-sm font-bold text-violet-700">{item.pair}</h3>
+                <p className="mt-2 text-sm text-stone-700">{item.tip}</p>
+                <p className="mt-2 rounded-2xl bg-white/80 p-3 text-sm text-stone-700">{item.example}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+      </motion.main>}
 
       {tab === "practice" && <motion.main key="practice" className="space-y-4" {...tabTransition}>{wrongQuestionCount === 0 && <section className={cardClass}><p className="text-sm text-rose-700">还没有错题，今天很顺利呀 🍡</p></section>}{[["A. 选择助词",practiceQuestions.sectionA],["B. 翻译成日语",practiceQuestions.sectionB],["C. 动词变形",practiceQuestions.sectionC]].map(([label,sec])=><section key={sec.title} className={cardClass}><h2 className="text-lg font-bold">{label}</h2>{sec.questions.map((q)=><div key={q.id} className="mt-3 rounded-2xl bg-stone-50 p-3"><p className="text-sm font-medium">{q.id}. {q.prompt}</p><div className="mt-2 flex gap-2"><button onClick={()=>setAnswersVisible((v)=>({...v,[q.id]:!v[q.id]}))} className="rounded-full bg-rose-100 px-3 py-1 text-xs">{answersVisible[q.id]?"隐藏答案":"查看答案"}</button><motion.button whileTap={{ scale: 1.08 }} onClick={()=>toggleWrongQuestion(q.id)} className={`rounded-full px-3 py-1 text-xs ${plan.wrongQuestions[q.id]?"bg-amber-200":"bg-stone-200"}`}>{plan.wrongQuestions[q.id]?"已标记错题":"标记错题"}</motion.button></div>{answersVisible[q.id] && <p className="mt-1 text-sm text-rose-700">参考答案：{q.answer}</p>}</div>)}</section>)}</motion.main>}
 
