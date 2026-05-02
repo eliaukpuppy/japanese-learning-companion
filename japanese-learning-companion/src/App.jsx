@@ -398,20 +398,72 @@ export default function JapaneseLearningCompanion() {
         {tab === "resources" && (
           <motion.main initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
             {[
-              ["主线教材", "《大家的日语》或 IRODORI", "每天用它推进主线，不要同时开太多教材。"],
-              ["语法查漏", "Tae Kim / Bunpro / 语法书", "遇到看不懂的语法再查，不要把查资料变成主线。"],
-              ["假名与汉字", "假名测验 + 汉字卡片", "每天少量复习，比周末狂背更稳。"],
-              ["听力跟读", "教材音频 / 慢速日语", "目标不是一次听懂，而是让耳朵熟悉句尾和节奏。"],
-              ["阅读过渡", "分级读物 / 简单漫画", "从带图、短句、重复率高的材料开始。"],
-              ["兴趣输入", "漫画、日乙、乙抓", "每周集中一次，只精读/精听3句话就算完成。"]
-            ].map(([title, name, desc]) => (
-              <div key={title} className="rounded-[2rem] bg-white/80 p-6 shadow-sm ring-1 ring-rose-100">
+              {
+                title: "主线教材",
+                name: "《大家的日语》或 IRODORI",
+                desc: "每天用它推进主线，不要同时开太多教材。",
+                links: [
+                  { label: "IRODORI", href: "https://www.irodori.jpf.go.jp/" },
+                  { label: "Marugoto", href: "https://marugoto.jpf.go.jp/" }
+                ]
+              },
+              {
+                title: "语法查漏",
+                name: "Tae Kim / Bunpro / 语法书",
+                desc: "遇到看不懂的语法再查，不要把查资料变成主线。",
+                links: [
+                  { label: "Tae Kim", href: "https://guidetojapanese.org/learn/" },
+                  { label: "JLPT 样题", href: "https://www.jlpt.jp/e/samples/sampleindex.html" }
+                ]
+              },
+              {
+                title: "假名与汉字",
+                name: "假名测验 + 汉字卡片",
+                desc: "每天少量复习，比周末狂背更稳。",
+                links: [{ label: "Kana Quiz", href: "https://kana-quiz.tofugu.com/" }]
+              },
+              {
+                title: "听力跟读",
+                name: "教材音频 / 慢速日语",
+                desc: "目标不是一次听懂，而是让耳朵熟悉句尾和节奏。",
+                links: [{ label: "NHK Easy Japanese", href: "https://www.nhk.or.jp/lesson/" }]
+              },
+              {
+                title: "阅读过渡",
+                name: "分级读物 / 简单漫画",
+                desc: "从带图、短句、重复率高的材料开始。",
+                links: [{ label: "Tadoku Free Books", href: "https://tadoku.org/japanese/en/free-books-en/" }]
+              },
+              {
+                title: "兴趣输入",
+                name: "漫画、日乙、乙抓",
+                desc: "每周集中一次，只精读/精听3句话就算完成。",
+                links: [
+                  { label: "NHK Easy", href: "https://www.nhk.or.jp/lesson/" },
+                  { label: "Marugoto", href: "https://marugoto.jpf.go.jp/" }
+                ]
+              }
+            ].map((resource) => (
+              <div key={resource.title} className="rounded-[2rem] bg-white/80 p-6 shadow-sm ring-1 ring-rose-100">
                 <div className="mb-3 inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-rose-100 text-rose-600">
                   <BookOpen size={21} />
                 </div>
-                <h2 className="text-lg font-bold text-stone-900">{title}</h2>
-                <p className="mt-1 font-semibold text-rose-600">{name}</p>
-                <p className="mt-3 text-sm leading-6 text-stone-600">{desc}</p>
+                <h2 className="text-lg font-bold text-stone-900">{resource.title}</h2>
+                <p className="mt-1 font-semibold text-rose-600">{resource.name}</p>
+                <p className="mt-3 text-sm leading-6 text-stone-600">{resource.desc}</p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {resource.links.map((link) => (
+                    <a
+                      key={link.href}
+                      href={link.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="rounded-full bg-rose-100 px-3 py-1.5 text-xs font-semibold text-rose-700 transition hover:bg-rose-200"
+                    >
+                      {link.label}
+                    </a>
+                  ))}
+                </div>
               </div>
             ))}
           </motion.main>
