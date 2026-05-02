@@ -1,6 +1,6 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { BookOpen, CalendarCheck, CheckCircle2, Heart, Sparkles, Target, Trophy, RotateCcw, ChevronRight, Clock, Gamepad2, ListChecks, PenSquare, Flame } from "lucide-react";
+import { BookOpen, CalendarCheck, Target, ListChecks, PenSquare, Flame, Settings, Download, Upload } from "lucide-react";
 import { minnaUpperLessons } from "./data/minnaUpperLessons";
 import { quickReference } from "./data/quickReference";
 import { practiceQuestions } from "./data/practiceQuestions";
@@ -8,6 +8,31 @@ import { checkinPlan } from "./data/checkinPlan";
 import { resources } from "./data/resources";
 
 const STORAGE_KEY = "nihongo-companion-v1";
+
+const APP_STORAGE_PREFIX = "nihongo-companion";
+
+const isAppStorageKey = (key) => key === STORAGE_KEY || key.startsWith(APP_STORAGE_PREFIX);
+
+const collectAppStorage = () => {
+  const data = {};
+  for (let i = 0; i < localStorage.length; i += 1) {
+    const key = localStorage.key(i);
+    if (!key || !isAppStorageKey(key)) continue;
+    if (key.toLowerCase().includes("note")) continue;
+    data[key] = localStorage.getItem(key);
+  }
+  return data;
+};
+
+const downloadJson = (filename, payload) => {
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = filename;
+  anchor.click();
+  URL.revokeObjectURL(url);
+};
 
 const initialPlan = {
   profile: {
@@ -58,6 +83,7 @@ export default function JapaneseLearningCompanion() {
   const [plan, setPlan] = useState(loadPlan);
   const [tab, setTab] = useState("today");
   const [answersVisible, setAnswersVisible] = useState({});
+  const importInputRef = useRef(null);
   useEffect(() => savePlan(plan), [plan]);
   const currentStage = useMemo(() => plan.stages.find((s) => s.id === plan.currentStageId) || plan.stages[0], [plan]);
 
@@ -65,6 +91,47 @@ export default function JapaneseLearningCompanion() {
   const toggleWrongQuestion = (id) => setPlan((p) => ({ ...p, wrongQuestions: { ...p.wrongQuestions, [id]: !p.wrongQuestions[id] } }));
   const toggleCheckin = (day) => setPlan((p) => ({ ...p, checkins: p.checkins.map((c) => c.day === day ? { ...c, done: !c.done } : c) }));
   const updateCheckinField = (day, field, value) => setPlan((p) => ({ ...p, checkins: p.checkins.map((c) => c.day === day ? { ...c, [field]: value } : c) }));
+
+  const handleExportData = () => {
+    const payload = {
+      app: "japanese-learning-companion",
+      exportedAt: new Date().toISOString(),
+      version: 1,
+      localStorage: collectAppStorage()
+    };
+    downloadJson(`nihongo-learning-data-${new Date().toISOString().slice(0, 10)}.json`, payload);
+  };
+
+  const handleOpenImport = () => importInputRef.current?.click();
+
+  const handleImportData = async (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+
+    const shouldImport = window.confirm("导入会覆盖当前本地学习数据，确定继续吗？");
+    if (!shouldImport) return;
+
+    try {
+      const text = await file.text();
+      const parsed = JSON.parse(text);
+      const incoming = parsed?.localStorage && typeof parsed.localStorage === "object" ? parsed.localStorage : parsed;
+
+      if (!incoming || typeof incoming !== "object") {
+        throw new Error("导入文件格式错误");
+      }
+
+      Object.keys(incoming).forEach((key) => {
+        if (!isAppStorageKey(key)) return;
+        if (key.toLowerCase().includes("note")) return;
+        localStorage.setItem(key, incoming[key]);
+      });
+
+      window.location.reload();
+    } catch (error) {
+      window.alert("导入失败：文件内容无效，请检查 JSON 文件。");
+    }
+  };
 
   return <div className="min-h-screen bg-gradient-to-br from-rose-50 via-orange-50 to-violet-50 text-stone-800"><div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
     <header className="mb-6 overflow-hidden rounded-[2rem] bg-white/75 p-6 shadow-sm ring-1 ring-rose-100 backdrop-blur"><h1 className="text-3xl font-bold">{plan.profile.title}</h1></header>
@@ -107,7 +174,24 @@ export default function JapaneseLearningCompanion() {
 
     {tab === "practice" && <motion.main className="space-y-4">{[["A. 选择助词",practiceQuestions.sectionA],["B. 翻译成日语",practiceQuestions.sectionB],["C. 动词变形",practiceQuestions.sectionC]].map(([label,sec])=><section key={sec.title} className="rounded-[2rem] bg-white/80 p-6 shadow-sm ring-1 ring-rose-100"><h2 className="text-lg font-bold">{label}</h2>{sec.questions.map((q)=><div key={q.id} className="mt-3 rounded-2xl bg-stone-50 p-3"><p className="text-sm font-medium">{q.id}. {q.prompt}</p>{q.choices && <p className="mt-1 text-xs text-stone-500">选项：{q.choices.join(" / ")}</p>}<div className="mt-2 flex gap-2"><button onClick={()=>setAnswersVisible((v)=>({...v,[q.id]:!v[q.id]}))} className="rounded-full bg-rose-100 px-3 py-1 text-xs">{answersVisible[q.id]?"隐藏答案":"查看答案"}</button><button onClick={()=>toggleWrongQuestion(q.id)} className={`rounded-full px-3 py-1 text-xs ${plan.wrongQuestions[q.id]?"bg-amber-200":"bg-stone-200"}`}>{plan.wrongQuestions[q.id]?"已标记错题":"标记错题"}</button></div>{answersVisible[q.id] && <p className="mt-1 text-sm text-rose-700">参考答案：{q.answer}</p>}</div>)}</section>)}</motion.main>}
 
-    {tab === "checkin" && <motion.main className="space-y-3">{checkinPlan.items.map((item)=>{const state=plan.checkins.find((c)=>c.day===item.day)||{done:false,sentence:"",mistakes:""}; return <section key={item.day} className="rounded-[1.5rem] bg-white/80 p-4 shadow-sm ring-1 ring-rose-100"><div className="flex items-center justify-between"><h3 className="font-bold">Day {item.day}</h3><button onClick={()=>toggleCheckin(item.day)} className={`rounded-full px-3 py-1 text-xs ${state.done?"bg-rose-500 text-white":"bg-rose-100 text-rose-700"}`}>{state.done?"已完成":"完成"}</button></div><p className="text-sm mt-1">复习课次：{item.focus}</p><p className="text-sm">今日重点：{item.focus}</p><input value={state.sentence} onChange={(e)=>updateCheckinField(item.day,"sentence",e.target.value)} placeholder="造句" className="mt-2 w-full rounded-xl border border-rose-100 px-3 py-2 text-sm"/><input value={state.mistakes} onChange={(e)=>updateCheckinField(item.day,"mistakes",e.target.value)} placeholder="错题" className="mt-2 w-full rounded-xl border border-rose-100 px-3 py-2 text-sm"/></section>;})}</motion.main>}
+    {tab === "checkin" && <motion.main className="space-y-3">{checkinPlan.items.map((item)=>{const state=plan.checkins.find((c)=>c.day===item.day)||{done:false,sentence:"",mistakes:""}; return <section key={item.day} className="rounded-[1.5rem] bg-white/80 p-4 shadow-sm ring-1 ring-rose-100"><div className="flex items-center justify-between"><h3 className="font-bold">Day {item.day}</h3><button onClick={()=>toggleCheckin(item.day)} className={`rounded-full px-3 py-1 text-xs ${state.done?"bg-rose-500 text-white":"bg-rose-100 text-rose-700"}`}>{state.done?"已完成":"完成"}</button></div><p className="text-sm mt-1">复习课次：{item.focus}</p><p className="text-sm">今日重点：{item.focus}</p><input value={state.sentence} onChange={(e)=>updateCheckinField(item.day,"sentence",e.target.value)} placeholder="造句" className="mt-2 w-full rounded-xl border border-rose-100 px-3 py-2 text-sm"/><input value={state.mistakes} onChange={(e)=>updateCheckinField(item.day,"mistakes",e.target.value)} placeholder="错题" className="mt-2 w-full rounded-xl border border-rose-100 px-3 py-2 text-sm"/></section>;})}
+      <section className="rounded-[2rem] bg-white/80 p-5 shadow-sm ring-1 ring-rose-100">
+        <div className="flex items-center gap-2">
+          <Settings size={18} className="text-rose-600" />
+          <h2 className="text-lg font-bold">设置</h2>
+        </div>
+        <p className="mt-2 text-sm text-stone-600">可导出或导入本网站学习进度（课程、错题、打卡、今日/路线等本地数据）。</p>
+        <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
+          <button onClick={handleExportData} className="flex items-center justify-center gap-2 rounded-2xl bg-rose-100 px-4 py-3 text-sm font-semibold text-rose-700 hover:bg-rose-200">
+            <Download size={16} />导出学习数据
+          </button>
+          <button onClick={handleOpenImport} className="flex items-center justify-center gap-2 rounded-2xl bg-violet-100 px-4 py-3 text-sm font-semibold text-violet-700 hover:bg-violet-200">
+            <Upload size={16} />导入学习数据
+          </button>
+          <input ref={importInputRef} type="file" accept="application/json" onChange={handleImportData} className="hidden" />
+        </div>
+      </section>
+    </motion.main>}
 
     {tab === "resources" && <motion.main className="grid gap-5 md:grid-cols-2">
       {resources.map((category) => (
