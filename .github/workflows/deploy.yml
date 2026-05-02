@@ -20,6 +20,9 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GITHUB_PAGES: 'true'
+    defaults:
+      run:
+        working-directory: japanese-learning-companion
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -29,6 +32,7 @@ jobs:
         with:
           node-version: 20
           cache: npm
+          cache-dependency-path: japanese-learning-companion/package-lock.json
 
       - name: Install dependencies
         run: npm install
@@ -39,7 +43,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: dist
+          path: japanese-learning-companion/dist
 
   deploy:
     environment:
